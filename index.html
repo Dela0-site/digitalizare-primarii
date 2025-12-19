@@ -1,0 +1,3038 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="utf-8" />
+    <title>Harta Digitalizării Primăriilor din România</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://d3js.org/topojson.v3.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600;700&family=Roboto+Mono:wght@400;500&display=swap');
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: 'Source Sans Pro', sans-serif;
+            background: #ffffff;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        
+        #app-header {
+            background: #fff;
+            padding: 12px 25px;
+            border-bottom: 3px solid #FBBE3B;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        
+        #app-header h1 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #714B3A;
+            margin: 0;
+        }
+        
+        #app-header .subtitle {
+            font-size: 0.75rem;
+            color: #888;
+            margin-top: 2px;
+        }
+        
+        .header-stats {
+            display: flex;
+            gap: 25px;
+        }
+        
+        .header-stat {
+            text-align: center;
+            position: relative;
+        }
+        
+        .header-stat .value {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 1.2rem;
+            color: #FBBE3B;
+            font-weight: 700;
+        }
+        
+        .header-stat .label {
+            font-size: 0.65rem;
+            color: #888;
+            text-transform: uppercase;
+        }
+
+        
+        #indicator-section {
+            background: #f8f8f8;
+            padding: 10px 25px;
+            border-bottom: 1px solid #e0e0e0;
+            text-align: left;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .indicator-row-top {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            flex: 1;
+        }
+
+        .indicator-row-bottom {
+            display: none;
+        }
+        
+        .indicator-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #714B3A;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+        
+        .indicator-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .indicator-sub-label {
+            font-size: 0.6rem;
+            color: #999;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+        }
+        
+        .indicator-toggles {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+        
+        .indicator-btn {
+            font-family: 'Source Sans Pro', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-radius: 15px;
+        }
+        
+        .indicator-btn.main {
+            padding: 5px 14px;
+            background: #fff;
+            border: 1.5px solid #714B3A;
+            font-size: 0.75rem;
+            color: #714B3A;
+        }
+        
+        .indicator-btn.main:hover {
+            background: #f5f0eb;
+        }
+        
+        .indicator-btn.main.active {
+            background: #FBBE3B;
+            border-color: #FBBE3B;
+            color: #714B3A;
+        }
+        
+        .indicator-btn.sub {
+            padding: 3px 10px;
+            background: #fff;
+            border: 1px solid #ddd;
+            font-size: 0.65rem;
+            color: #666;
+        }
+        
+        .indicator-btn.sub:hover {
+            border-color: #FBBE3B;
+            background: #fffbf0;
+        }
+        
+        .indicator-btn.sub.active {
+            background: #FBBE3B;
+            border-color: #FBBE3B;
+            color: #714B3A;
+        }
+        
+        .indicator-legend {
+            display: flex;
+            flex-direction: column;
+            width: 150px;
+            min-width: 120px;
+            max-width: 200px;
+        }
+        
+        .indicator-legend-bar {
+            display: flex;
+            height: 8px;
+            width: 100%;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 2px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .indicator-legend-labels {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            font-size: 0.6rem;
+            color: #666;
+            font-weight: 600;
+        }
+        
+        .indicator-legend-no-response {
+            display: flex;
+            align-items: center;
+            margin-top: 2px;
+            gap: 3px;
+        }
+        
+        .indicator-legend-no-response span {
+            font-size: 0.55rem !important;
+            color: #666;
+        }
+
+        
+        #controls-bar {
+            background: #f8f8f8;
+            border-bottom: 1px solid #e0e0e0;
+            flex-shrink: 0;
+        }
+        
+        .filters-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 20px;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.2s;
+        }
+        
+        .filters-toggle:hover {
+            background: #f0f0f0;
+        }
+        
+        .filters-toggle-text {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #714B3A;
+        }
+        
+        .filters-toggle-text i {
+            color: #FBBE3B;
+        }
+        
+        .filters-toggle-arrow {
+            transition: transform 0.3s;
+            color: #714B3A;
+        }
+        
+        .filters-toggle.active .filters-toggle-arrow {
+            transform: rotate(180deg);
+        }
+        
+        .filters-content {
+            display: none;
+            padding: 10px 20px 15px;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: flex-end;
+            border-top: 1px solid #e8e8e8;
+        }
+        
+        .filters-content.visible {
+            display: flex;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            min-width: 140px;
+        }
+        
+        .control-group.wide {
+            min-width: 180px;
+        }
+        
+        .control-label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #714B3A;
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+        
+        select {
+            padding: 6px 8px;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            color: #333;
+            font-family: 'Source Sans Pro', sans-serif;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        select:hover {
+            border-color: #FBBE3B;
+        }
+        
+        select:focus {
+            outline: none;
+            border-color: #FBBE3B;
+            box-shadow: 0 0 0 2px rgba(251, 190, 59, 0.2);
+        }
+        
+        
+        #content-wrapper {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        #main-view {
+            flex: 1;
+            position: relative;
+            background: #fafafa;
+            overflow: hidden;
+        }
+        
+        #map-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+        
+        #legend-box {
+            display: none; 
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(255,255,255,0.95);
+            padding: 12px 15px;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            z-index: 10;
+            min-width: 180px;
+        }
+        
+        .legend-title {
+            font-size: 0.7rem;
+            color: #714B3A;
+            font-weight: 600;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+        
+        .legend-scale {
+            display: flex;
+            height: 10px;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 4px;
+        }
+        
+        .legend-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.65rem;
+            color: #888;
+        }
+        
+        .provider-total {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+        }
+        
+        .provider-total .value {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 1rem;
+            color: #714B3A;
+            font-weight: 700;
+        }
+        
+        .provider-total .label {
+            font-size: 0.65rem;
+            color: #888;
+        }
+        
+        #bar-chart-container {
+            position: absolute;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255,255,255,0.97);
+            padding: 8px 15px 10px 15px;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: none;
+            z-index: 10;
+        }
+        
+        .bar-chart-title {
+            font-size: 0.6rem;
+            color: #714B3A;
+            font-weight: 600;
+            text-transform: uppercase;
+            text-align: center;
+            margin-bottom: 6px;
+            letter-spacing: 0.5px;
+        }
+        
+        .distribution-bars {
+            display: flex;
+            gap: 4px;
+            align-items: flex-end;
+            height: 35px;
+            margin-bottom: 2px;
+        }
+        
+        .dist-bar {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 30px;
+        }
+        
+        .dist-bar-fill {
+            width: 100%;
+            border-radius: 2px 2px 0 0;
+            transition: height 0.3s;
+        }
+        
+        .dist-bar-label {
+            font-size: 0.5rem;
+            color: #888;
+            margin-top: 3px;
+            white-space: nowrap;
+        }
+        
+        .dist-bar-value {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.55rem;
+            color: #333;
+            margin-bottom: 2px;
+        }
+        
+        
+        #panel {
+            width: 420px;
+            background: #fff;
+            border-left: 1px solid #e0e0e0;
+            padding: 20px;
+            overflow-y: auto;
+            flex-shrink: 0;
+            display: none;
+            position: relative;
+        }
+        
+        #panel.visible {
+            display: block;
+        }
+        
+        .panel-close-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 28px;
+            height: 28px;
+            border: none;
+            background: #f0f0f0;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: #666;
+            transition: all 0.2s;
+            z-index: 10;
+        }
+        
+        .panel-close-btn:hover {
+            background: #e0e0e0;
+            color: #333;
+        }
+        
+        #panel::-webkit-scrollbar { width: 5px; }
+        #panel::-webkit-scrollbar-track { background: #f0f0f0; }
+        #panel::-webkit-scrollbar-thumb { background: #FBBE3B; border-radius: 3px; }
+        
+        #panel h2 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #714B3A;
+            margin-bottom: 3px;
+        }
+        
+        .region-tag {
+            display: inline-block;
+            font-size: 0.7rem;
+            color: #714B3A;
+            background: rgba(251, 190, 59, 0.2);
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+        }
+        
+        .big-stat {
+            text-align: center;
+            padding: 18px;
+            background: linear-gradient(135deg, rgba(251, 190, 59, 0.15) 0%, rgba(251, 190, 59, 0.05) 100%);
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(251, 190, 59, 0.3);
+        }
+        
+        .big-number {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 2.2rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+        
+        .big-label {
+            font-size: 0.75rem;
+            color: #888;
+            margin-top: 5px;
+        }
+        
+        .section-title {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #714B3A;
+            font-weight: 600;
+            margin: 18px 0 10px 0;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .chart-row {
+            margin-bottom: 10px;
+        }
+        
+        .chart-label {
+            font-size: 0.7rem;
+            color: #666;
+            margin-bottom: 4px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .chart-label .value {
+            font-family: 'Roboto Mono', monospace;
+            color: #333;
+            font-weight: 500;
+        }
+        
+        .chart-label .value.no-response {
+            color: #999;
+            font-style: italic;
+            font-family: 'Inter', sans-serif;
+            font-size: 11px;
+        }
+        
+        .bar-bg {
+            height: 6px;
+            background: #eee;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.5s ease-out;
+        }
+        
+        .stat-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .stat-item {
+            background: #f8f8f8;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #eee;
+        }
+        
+        .stat-item .value {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.95rem;
+            color: #333;
+            font-weight: 500;
+        }
+        
+        .stat-item .value.no-response {
+            color: #999;
+            font-style: italic;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.7rem;
+        }
+        
+        .stat-item .label {
+            font-size: 0.6rem;
+            color: #888;
+            text-transform: uppercase;
+        }
+        
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.65rem;
+            font-weight: 600;
+        }
+        
+        .status-badge.positive {
+            background: rgba(76, 175, 80, 0.15);
+            color: #4CAF50;
+        }
+        
+        .status-badge.negative {
+            background: rgba(244, 67, 54, 0.15);
+            color: #F44336;
+        }
+        
+        .status-badge.warning {
+            background: rgba(255, 152, 0, 0.15);
+            color: #FF9800;
+        }
+        
+        .panel-hint {
+            font-size: 0.8rem;
+            color: #999;
+            text-align: center;
+            padding: 40px 15px;
+        }
+        
+        .panel-hint i {
+            font-size: 1.8rem;
+            margin-bottom: 12px;
+            display: block;
+            color: #ddd;
+        }
+        
+        .efficiency-explanation {
+            font-size: 0.7rem;
+            color: #666;
+            font-style: italic;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+        
+        .info-text {
+            font-size: 0.7rem;
+            color: #555;
+            margin: 6px 0 12px 0;
+            line-height: 1.4;
+            padding: 8px 10px;
+            background: #f5f5f5;
+            border-radius: 4px;
+            border-left: 3px solid #714B3A;
+        }
+        
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 10px;
+            padding: 8px 14px;
+            background: linear-gradient(135deg, #714B3A 0%, #8B5A42 100%);
+            color: #fff;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(113, 75, 58, 0.3);
+        }
+        
+        .download-btn:hover {
+            background: linear-gradient(135deg, #8B5A42 0%, #A06B52 100%);
+            box-shadow: 0 3px 8px rgba(113, 75, 58, 0.4);
+            transform: translateY(-1px);
+        }
+        
+        .download-btn i {
+            font-size: 0.9rem;
+        }
+        
+        .site-year-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 12px;
+            background: #f8f8f8;
+            border-radius: 6px;
+            margin-bottom: 12px;
+        }
+        
+        .site-year-info i {
+            color: #FBBE3B;
+            font-size: 1rem;
+        }
+        
+        .site-year-info .label {
+            font-size: 0.7rem;
+            color: #888;
+        }
+        
+        .site-year-info .value {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #714B3A;
+        }
+        
+        .site-year-info.no-data .value {
+            color: #999;
+            font-style: italic;
+        }
+        
+        .text-544 {
+            margin-top: 10px;
+            padding: 12px;
+            background: rgba(244, 67, 54, 0.08);
+            border-left: 3px solid #F44336;
+            border-radius: 0 6px 6px 0;
+            font-size: 0.7rem;
+            color: #555;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .toggle-544 {
+            margin-top: 10px;
+        }
+        
+        .toggle-544-btn {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            padding: 10px 14px;
+            background: linear-gradient(135deg, #f5f5f5 0%, #ebebeb 100%);
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #714B3A;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .toggle-544-btn:hover {
+            background: linear-gradient(135deg, #ebebeb 0%, #e0e0e0 100%);
+            border-color: #ccc;
+        }
+        
+        .toggle-544-btn i {
+            transition: transform 0.3s ease;
+        }
+        
+        .toggle-544-btn.active i {
+            transform: rotate(180deg);
+        }
+        
+        .toggle-544-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        
+        .toggle-544-content.show {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .toggle-544-text {
+            margin-top: 8px;
+            padding: 12px;
+            background: rgba(244, 67, 54, 0.08);
+            border-left: 3px solid #F44336;
+            border-radius: 0 6px 6px 0;
+            font-size: 0.7rem;
+            color: #555;
+            line-height: 1.5;
+            white-space: pre-wrap;
+        }
+        
+        
+        .county {
+            fill: #e8e8e8;
+            stroke: #fff;
+            stroke-width: 1px;
+            transition: fill 0.5s, filter 0.2s;
+        }
+        
+        .county:not(.region-colored):hover {
+            fill: #d8d8d8;
+        }
+        
+        .county.region-colored {
+            stroke: #fff;
+            stroke-width: 1.5px;
+            cursor: pointer;
+        }
+        
+        .county.region-colored:hover {
+            filter: brightness(1.15);
+            stroke: #714B3A;
+            stroke-width: 2px;
+        }
+        
+        .county-label {
+            font-size: 8px;
+            fill: #999;
+            text-anchor: middle;
+            pointer-events: none;
+            font-weight: 500;
+        }
+        
+        .uat-circle {
+            cursor: pointer;
+            transition: all 0.2s;
+            stroke: rgba(255,255,255,0.8);
+            stroke-width: 1px;
+        }
+        
+        .uat-circle:hover {
+            stroke: #714B3A;
+            stroke-width: 2px;
+        }
+        
+        .uat-circle.selected {
+            stroke: #714B3A;
+            stroke-width: 3px;
+        }
+        
+        .tooltip {
+            position: absolute;
+            background: rgba(255,255,255,0.98);
+            border: 1px solid #FBBE3B;
+            border-radius: 6px;
+            padding: 10px 12px;
+            font-size: 0.8rem;
+            pointer-events: none;
+            z-index: 1000;
+            max-width: 220px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.15);
+        }
+        
+        .tooltip .name {
+            font-weight: 700;
+            color: #714B3A;
+            margin-bottom: 3px;
+        }
+        
+        .tooltip .detail {
+            color: #666;
+            font-size: 0.7rem;
+        }
+        
+        #zoom-controls {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            z-index: 10;
+        }
+        
+        .zoom-btn {
+            width: 32px;
+            height: 32px;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #714B3A;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .zoom-btn:hover {
+            background: #FBBE3B;
+            color: #fff;
+            border-color: #FBBE3B;
+        }
+        
+        
+        #region-selector {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            z-index: 10;
+        }
+        
+        #region-selector select {
+            padding: 8px 12px;
+            background: #fff;
+            border: 2px solid #714B3A;
+            border-radius: 6px;
+            color: #714B3A;
+            font-family: 'Source Sans Pro', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        #region-selector select:hover {
+            border-color: #FBBE3B;
+        }
+        
+        #region-selector select:focus {
+            outline: none;
+            border-color: #FBBE3B;
+            box-shadow: 0 2px 8px rgba(251, 190, 59, 0.3);
+        }
+        
+        
+        .region-shape {
+            cursor: pointer;
+            transition: all 0.3s;
+            stroke: #fff;
+            stroke-width: 2px;
+        }
+        
+        .region-shape:hover {
+            stroke: #714B3A;
+            stroke-width: 3px;
+            filter: brightness(1.1);
+        }
+        
+        .region-avg-label {
+            font-size: 14px;
+            font-weight: 700;
+            fill: #fff;
+            text-anchor: middle;
+            pointer-events: none;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+        }
+        
+        .region-name-label {
+            font-size: 10px;
+            fill: #fff;
+            text-anchor: middle;
+            pointer-events: none;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        }
+        
+        .click-hint {
+            font-size: 9px;
+            fill: rgba(255,255,255,0.8);
+            text-anchor: middle;
+            pointer-events: none;
+        }
+        
+        
+        .header-logo {
+            height: 32px;
+            width: auto;
+            max-width: 150px;
+            object-fit: contain;
+            margin-bottom: 6px;
+        }
+        
+        .header-title-section {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        
+        .info-btn {
+            background: none;
+            border: none;
+            color: #FBBE3B;
+            cursor: pointer;
+            font-size: 0.75rem;
+            padding: 2px 5px;
+            margin-top: 2px;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+        
+        .info-btn:hover {
+            opacity: 1;
+        }
+        
+        .info-tooltip {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #fff;
+            border: 1px solid #FBBE3B;
+            border-radius: 8px;
+            padding: 12px 15px;
+            font-size: 0.75rem;
+            color: #555;
+            line-height: 1.5;
+            width: 280px;
+            max-width: calc(100vw - 40px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            z-index: 1000;
+            text-align: left;
+            margin-top: 5px;
+        }
+        
+        @media (max-width: 480px) {
+            .info-tooltip {
+                position: fixed;
+                top: auto;
+                bottom: 20px;
+                left: 20px;
+                right: 20px;
+                transform: none;
+                width: auto;
+                max-width: none;
+            }
+            .info-tooltip::before,
+            .info-tooltip::after {
+                display: none;
+            }
+        }
+        
+        .info-tooltip.show {
+            display: block;
+        }
+        
+        .info-tooltip::before {
+            content: '';
+            position: absolute;
+            top: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 8px solid #FBBE3B;
+        }
+        
+        .info-tooltip::after {
+            content: '';
+            position: absolute;
+            top: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-bottom: 6px solid #fff;
+        }
+        
+        
+        #app-footer {
+            background: #fff;
+            padding: 10px 25px;
+            border-top: 3px solid #FBBE3B;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: center;
+            text-align: center;
+            flex-shrink: 0;
+        }
+        
+        .footer-main {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        @media (min-width: 768px) {
+            #app-footer {
+                flex-direction: row;
+                justify-content: space-between;
+                text-align: left;
+            }
+            .footer-main {
+                flex-direction: row;
+                align-items: center;
+                gap: 15px;
+            }
+        }
+        
+        .footer-logo {
+            height: 32px;
+            width: auto;
+            max-width: 120px;
+            object-fit: contain;
+        }
+        
+        .footer-credits {
+            font-size: 0.75rem;
+            color: #888;
+        }
+        
+        .footer-credits a {
+            color: #714B3A;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .footer-credits a:hover {
+            color: #FBBE3B;
+        }
+
+        .footer-text {
+            font-size: 0.75rem;
+            color: #888;
+            margin: 0;
+        }
+        
+        .student-link {
+            color: #714B3A;
+            text-decoration: underline;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .student-link:hover {
+            color: #FBBE3B;
+        }
+        
+        
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 2000; 
+            left: 0;
+            top: 0;
+            width: 100%; 
+            height: 100%; 
+            overflow: auto; 
+            background-color: rgba(0,0,0,0.4); 
+            backdrop-filter: blur(2px);
+        }
+        
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto; 
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 700px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .close-modal {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .close-modal:hover,
+        .close-modal:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        
+        .student-list {
+            list-style-type: none;
+            padding: 0;
+            margin-top: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .methodology-btn {
+            background: #714B3A;
+            color: #fff;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.2s;
+        }
+        
+        .methodology-btn:hover {
+            background: #FBBE3B;
+            color: #714B3A;
+        }
+        
+        .modal-content h3 {
+            color: #714B3A;
+            margin-bottom: 15px;
+        }
+        
+        .modal-content p {
+            margin-bottom: 12px;
+            line-height: 1.6;
+            color: #555;
+            font-size: 0.9rem;
+        }
+        
+        #search-container {
+            position: absolute;
+            top: 60px;
+            left: 15px;
+            z-index: 10;
+        }
+        
+        .search-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        
+        .search-toggle {
+            width: 36px;
+            height: 36px;
+            background: #fff;
+            border: 2px solid #714B3A;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #714B3A;
+            font-size: 14px;
+            transition: all 0.2s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .search-toggle:hover {
+            background: #FBBE3B;
+            border-color: #FBBE3B;
+        }
+        
+        .search-input-wrapper {
+            display: none;
+            position: absolute;
+            left: 0;
+            top: 0;
+            background: #fff;
+            border: 2px solid #714B3A;
+            border-radius: 20px;
+            padding: 0 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            align-items: center;
+        }
+        
+        .search-input-wrapper.active {
+            display: flex;
+        }
+        
+        .search-input {
+            border: none;
+            outline: none;
+            padding: 8px 5px;
+            font-size: 0.85rem;
+            width: 220px;
+            font-family: 'Source Sans Pro', sans-serif;
+        }
+        
+        .search-input::placeholder {
+            color: #aaa;
+        }
+        
+        .search-close {
+            background: none;
+            border: none;
+            color: #888;
+            cursor: pointer;
+            padding: 5px;
+            font-size: 12px;
+        }
+        
+        .search-close:hover {
+            color: #714B3A;
+        }
+        
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            margin-top: 5px;
+            max-height: 280px;
+            overflow-y: auto;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: none;
+            min-width: 250px;
+        }
+        
+        .search-results.active {
+            display: block;
+        }
+        
+        .search-result-item {
+            padding: 12px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background 0.15s;
+        }
+        
+        .search-result-item:last-child {
+            border-bottom: none;
+        }
+        
+        .search-result-item:hover {
+            background: #fef9e7;
+        }
+        
+        .search-result-item .city-name {
+            font-weight: 600;
+            color: #714B3A;
+            font-size: 0.9rem;
+            margin-bottom: 2px;
+        }
+        
+        .search-result-item .city-region {
+            font-size: 0.75rem;
+            color: #888;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .search-result-item .city-region i {
+            font-size: 0.65rem;
+            color: #FBBE3B;
+        }
+        
+        .search-no-results {
+            padding: 15px;
+            text-align: center;
+            color: #888;
+            font-size: 0.85rem;
+        }
+        
+        .search-no-results i {
+            display: block;
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+            color: #ddd;
+        }
+        
+        .student-list li {
+            padding: 6px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 0.8rem;
+        }
+        
+        .student-list li:last-child {
+            border-bottom: none;
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                overflow-y: auto;
+                height: auto;
+                min-height: 100vh;
+            }
+            
+            #app-header {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 12px 15px;
+                gap: 12px;
+            }
+            
+            .header-title-section {
+                width: 100%;
+            }
+            
+            .header-logo {
+                height: 28px;
+                max-width: 120px;
+            }
+            
+            #app-header h1 {
+                font-size: 1.1rem;
+            }
+            
+            .header-stats {
+                width: 100%;
+                justify-content: space-between;
+                gap: 10px;
+            }
+            
+            .header-stat .value {
+                font-size: 1rem;
+            }
+            
+            .header-stat .label {
+                font-size: 0.6rem;
+            }
+            
+            #indicator-section {
+                padding: 8px 15px;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+            
+            .indicator-row-top {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+                width: 100%;
+            }
+            
+            .indicator-group {
+                flex-wrap: wrap;
+                gap: 6px;
+            }
+            
+            .indicator-btn.main {
+                padding: 5px 12px;
+                font-size: 0.7rem;
+            }
+            
+            .indicator-sub-label {
+                font-size: 0.55rem;
+            }
+            
+            .indicator-toggles {
+                gap: 4px;
+            }
+            
+            .indicator-btn.sub {
+                padding: 3px 8px;
+                font-size: 0.6rem;
+            }
+            
+            .indicator-legend {
+                width: 100%;
+                max-width: 200px;
+                margin-left: 0;
+            }
+            
+            .filters-toggle {
+                padding: 10px 15px;
+            }
+            
+            .filters-toggle-text {
+                font-size: 0.8rem;
+            }
+            
+            .filters-content {
+                padding: 10px 15px 12px;
+                gap: 8px;
+            }
+            
+            .control-group {
+                min-width: calc(50% - 4px);
+                flex: 1 1 calc(50% - 4px);
+            }
+            
+            .control-group.wide {
+                min-width: calc(50% - 4px);
+            }
+            
+            select {
+                width: 100%;
+                font-size: 0.7rem;
+                padding: 8px 6px;
+            }
+            
+            #content-wrapper {
+                flex-direction: column;
+                overflow: visible;
+            }
+            
+            #main-view {
+                height: 55vh;
+                min-height: 350px;
+                flex: none;
+            }
+            
+            #panel {
+                width: 100%;
+                border-left: none;
+                border-top: 1px solid #e0e0e0;
+                max-height: none;
+                overflow-y: visible;
+                display: none;
+            }
+            
+            #panel.visible {
+                display: block;
+            }
+            
+            #legend-box {
+                bottom: 10px;
+                left: 10px;
+                padding: 8px 10px;
+                min-width: 140px;
+            }
+            
+            .legend-title {
+                font-size: 0.6rem;
+            }
+            
+            .legend-labels {
+                font-size: 0.55rem;
+            }
+            
+            #bar-chart-container {
+                padding: 5px 10px;
+                bottom: 5px;
+            }
+            
+            .bar-chart-title {
+                font-size: 0.55rem;
+                margin-bottom: 4px;
+            }
+            
+            .distribution-bars {
+                height: 35px;
+                gap: 3px;
+            }
+            
+            .dist-bar {
+                min-width: 25px;
+            }
+            
+            .dist-bar-label {
+                font-size: 0.45rem;
+            }
+            
+            .dist-bar-value {
+                font-size: 0.5rem;
+            }
+            
+            #zoom-controls {
+                top: 10px;
+                right: 10px;
+            }
+            
+            .zoom-btn {
+                width: 28px;
+                height: 28px;
+                font-size: 12px;
+            }
+            
+            #region-selector {
+                top: 10px;
+                left: 10px;
+            }
+            
+            #region-selector select {
+                padding: 6px 10px;
+                font-size: 0.75rem;
+            }
+            
+            #search-container {
+                top: 55px;
+                left: 10px;
+            }
+            
+            .search-toggle {
+                width: 32px;
+                height: 32px;
+                font-size: 12px;
+            }
+            
+            .search-input {
+                width: 170px;
+                font-size: 0.8rem;
+            }
+            
+            .methodology-btn {
+                padding: 4px 10px;
+                font-size: 0.65rem;
+            }
+            
+            .panel-hint {
+                padding: 25px 15px;
+            }
+            
+            .panel-hint i {
+                font-size: 1.4rem;
+            }
+            
+            .big-stat {
+                padding: 14px;
+            }
+            
+            .big-number {
+                font-size: 1.8rem;
+            }
+            
+            .stat-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .modal-content {
+                width: 90%;
+                margin: 20% auto;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .header-stats {
+                flex-wrap: wrap;
+            }
+            
+            .header-stat {
+                flex: 1 1 30%;
+            }
+            
+            .indicator-title {
+                font-size: 0.85rem;
+                line-height: 1.3;
+            }
+            
+            .indicator-group {
+                margin-bottom: 8px;
+            }
+            
+            .indicator-btn.main {
+                padding: 7px 14px;
+                font-size: 0.75rem;
+            }
+            
+            .indicator-sub-label {
+                font-size: 0.55rem;
+            }
+            
+            .indicator-toggles {
+                gap: 4px;
+            }
+            
+            .indicator-btn.sub {
+                padding: 4px 8px;
+                font-size: 0.6rem;
+            }
+            
+            .indicator-legend {
+                max-width: 100%;
+            }
+            
+            .indicator-legend-bar {
+                height: 8px;
+            }
+            
+            .indicator-legend-labels {
+                font-size: 0.55rem;
+            }
+            
+            #bar-chart-container {
+                padding: 4px 8px;
+                bottom: 3px;
+                max-width: 85%;
+            }
+            
+            .bar-chart-title {
+                font-size: 0.5rem;
+                margin-bottom: 3px;
+            }
+            
+            .distribution-bars {
+                height: 30px;
+                gap: 2px;
+            }
+            
+            .dist-bar {
+                min-width: 20px;
+            }
+            
+            .dist-bar-label {
+                font-size: 0.4rem;
+            }
+            
+            .dist-bar-value {
+                font-size: 0.45rem;
+            }
+            
+            .control-group {
+                min-width: 100%;
+                flex: 1 1 100%;
+            }
+            
+            .control-group.wide {
+                min-width: 100%;
+            }
+            
+            #main-view {
+                height: 45vh;
+                min-height: 300px;
+            }
+            
+            
+            .footer-logo {
+                height: 30px;
+            }
+            
+            .info-tooltip {
+                width: 220px;
+                font-size: 0.7rem;
+                padding: 10px 12px;
+            }
+            
+            .info-btn {
+                font-size: 0.7rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app-header">
+        <div class="header-title-section">
+            <h1>Harta Digitalizării Primăriilor</h1>
+            <div class="subtitle">ANALIZA GRADULUI DE DIGITALIZARE a administrației locale în orașele din România</div>
+        </div>
+        <div class="header-stats">
+            <div class="header-stat">
+                <div class="value" id="stat-total-uats">--</div>
+                <div class="label">de primării analizate</div>
+                <button class="info-btn" onclick="toggleInfoTooltip('info-primarii')">
+                    <i class="fas fa-info-circle"></i>
+                </button>
+                <div class="info-tooltip" id="info-primarii">
+                    În România sunt 325 de primării de orașe și municipii, plus primăriile de Sector din București. Dintre acestea 28 nu au răspuns solicitării de presă trimise în baza legii care garantează accesul la informații publice.
+                </div>
+            </div>
+            <div class="header-stat">
+                <div class="value" id="stat-avg-score">--</div>
+                <div class="label">Scor mediu</div>
+            </div>
+            <div class="header-stat">
+                <div class="value" id="stat-total-spend">--</div>
+                <div class="label">Cheltuieli totale</div>
+                <button class="info-btn" onclick="toggleInfoTooltip('info-cheltuieli')">
+                    <i class="fas fa-info-circle"></i>
+                </button>
+                <div class="info-tooltip" id="info-cheltuieli">
+                    Suma reprezintă cât au cheltuit primăriile pentru digitalizarea instituției în perioada 2020-2025. Acest total include costurile pentru achiziții echipamente TIC, soluții digitale, pentru realizarea paginii web, pentru implementarea aplicațiilor digitale pentru cetățeni și funcționari, pentru soluțiile Smart City, dar și pentru mentenanța lor. Suma este una parțială având în vedere că primării cu bugete consistente au refuzat să ofere informații legate de costuri.
+                </div>
+            </div>
+            <div class="header-stat">
+                <button class="methodology-btn" onclick="openMethodologyModal()">
+                    <i class="fas fa-book"></i> Metodologie
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="indicator-section">
+        <div class="indicator-row-top">
+            <div class="indicator-title">Scor digitalizare</div>
+            <div class="indicator-group">
+                <button class="indicator-btn main active" data-indicator="scor_digitalizare">Scor digitalizare</button>
+                <span class="indicator-sub-label">Componente:</span>
+                <div class="indicator-toggles">
+                    <button class="indicator-btn sub" data-indicator="scor_servicii_cetateni">Aplicații cetățeni</button>
+                    <button class="indicator-btn sub" data-indicator="scor_procese_interne">Aplicații funcționari</button>
+                    <button class="indicator-btn sub" data-indicator="scor_smart_city">Soluții Smart City</button>
+                    <button class="indicator-btn sub" data-indicator="cheltuieli_per_capita">Cheltuieli per capita</button>
+                </div>
+            </div>
+            <div class="indicator-group">
+                <button class="indicator-btn main" data-indicator="scor_investitie">Eficiență investiție</button>
+            </div>
+            <div class="indicator-legend">
+                <div class="indicator-legend-bar" id="indicator-legend-bar"></div>
+                <div class="indicator-legend-labels">
+                    <span>0</span>
+                    <span id="indicator-legend-max">10</span>
+                </div>
+                <div class="indicator-legend-no-response">
+                    <div style="width: 8px; height: 8px; background-color: #dc3545; border-radius: 50%;"></div>
+                    <span>Nu a răspuns</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="controls-bar">
+        <div class="filters-toggle" onclick="toggleFilters()">
+            <span class="filters-toggle-text">
+                <i class="fas fa-filter"></i>
+                Filtrează harta în funcție de alte criterii
+            </span>
+            <i class="fas fa-chevron-down filters-toggle-arrow"></i>
+        </div>
+        <div class="filters-content" id="filters-content">
+            <div class="control-group">
+                <label class="control-label">Strategie</label>
+                <select id="filter-strategy">
+                    <option value="all">Toate</option>
+                    <option value="da_strategie">Au strategie de digitalizare</option>
+                    <option value="capitol_in_strategie">Au un capitol pe digitalizare în strategia locală de dezvoltare</option>
+                    <option value="nu_are">Nu au strategie de digitalizare</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label class="control-label">Sisteme vechi</label>
+                <select id="filter-old-systems">
+                    <option value="all">Toate</option>
+                    <option value="yes">Au sisteme vechi</option>
+                    <option value="no">Fără sisteme vechi</option>
+                    <option value="xpw7">Windows XP/7</option>
+                </select>
+            </div>
+
+            <div class="control-group wide">
+                <label class="control-label">Furnizori echipamente TIC</label>
+                <select id="filter-provider-tic">
+                    <option value="all">Toți furnizorii</option>
+                </select>
+            </div>
+            
+            <div class="control-group wide">
+                <label class="control-label">Furnizori soluții digitale</label>
+                <select id="filter-provider-solutii">
+                    <option value="all">Toți furnizorii</option>
+                </select>
+            </div>
+            
+            <div class="control-group wide">
+                <label class="control-label">Furnizori Smart City</label>
+                <select id="filter-provider-smart">
+                    <option value="all">Toți furnizorii</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label class="control-label">Transparență 544</label>
+                <select id="filter-transparency">
+                    <option value="all">Toate</option>
+                    <option value="complet">Răspuns complet</option>
+                    <option value="incomplet_revenit">Incomplet, revenit</option>
+                    <option value="incomplet_refuzat">Incomplet, refuzat</option>
+                    <option value="nu_au_raspuns">Nu au răspuns</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    
+    <div id="content-wrapper">
+        <div id="main-view">
+            <div id="map-container"></div>
+            
+            <div id="zoom-controls">
+                <button class="zoom-btn" onclick="zoomIn()"><i class="fas fa-plus"></i></button>
+                <button class="zoom-btn" onclick="zoomOut()"><i class="fas fa-minus"></i></button>
+                <button class="zoom-btn" onclick="resetZoom()"><i class="fas fa-expand"></i></button>
+            </div>
+            
+            <div id="region-selector">
+                <select id="filter-region">
+                    <option value="all">🇷🇴 Național</option>
+                    <option value="Nord-Est">Nord-Est</option>
+                    <option value="Sud-Est">Sud-Est</option>
+                    <option value="Sud">Sud-Muntenia</option>
+                    <option value="Sud-Vest">Sud-Vest Oltenia</option>
+                    <option value="Vest">Vest</option>
+                    <option value="Nord-Vest">Nord-Vest</option>
+                    <option value="Centru">Centru</option>
+                    <option value="București-Ilfov">București-Ilfov</option>
+                </select>
+            </div>
+            
+            <div id="search-container">
+                <div class="search-wrapper">
+                    <button class="search-toggle" onclick="toggleSearch()" title="Caută UAT-ul">
+                        <i class="fas fa-search"></i>
+                    </button>
+                    <div class="search-input-wrapper" id="search-input-wrapper">
+                        <i class="fas fa-search" style="color: #888; font-size: 12px;"></i>
+                        <input type="text" class="search-input" id="search-input" placeholder="Caută UAT-ul (oraș, municipiu)..." oninput="searchCity(this.value)">
+                        <button class="search-close" onclick="closeSearch()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="search-results" id="search-results"></div>
+                </div>
+            </div>
+            
+            <div id="legend-box">
+                <div class="legend-title" id="legend-title">Scor digitalizare</div>
+                <div class="legend-scale" id="legend-scale"></div>
+                <div class="legend-labels">
+                    <span>0</span>
+                    <span id="legend-max">10</span>
+                </div>
+                <div class="provider-total" id="provider-total" style="display: none;">
+                    <div class="label">Cost total național</div>
+                    <div class="value" id="provider-total-value">0 RON</div>
+                </div>
+            </div>
+            
+            <div id="bar-chart-container">
+                <div class="bar-chart-title">Distribuție scoruri</div>
+                <div class="distribution-bars" id="distribution-bars"></div>
+            </div>
+        </div>
+        
+        <div id="panel">
+            <button class="panel-close-btn" onclick="closePanel()" title="Închide">
+                <i class="fas fa-times"></i>
+            </button>
+            <div id="panel-content">
+                <div class="panel-hint">
+                    <i class="fas fa-mouse-pointer"></i>
+                    Selectează un UAT de pe hartă pentru a vedea detaliile
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="tooltip" id="tooltip" style="display: none;"></div>
+    
+    <div id="app-footer">
+        <div class="footer-main">
+            <img src="logo.png" alt="Logo" class="footer-logo" />
+            <div class="footer-text">
+                O documentare realizată de Diana Oncioiu și Vlad Stoicescu împreună cu un colectiv de <span class="student-link" onclick="openStudentModal()">33 de studenți</span>.
+            </div>
+        </div>
+        <div class="footer-credits">
+            developed by <a href="https://egas.studio" target="_blank">egas.studio</a>
+        </div>
+    </div>
+
+    
+    <div id="student-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeStudentModal()">&times;</span>
+            <h3>Colectiv studenți</h3>
+            <ul class="student-list" id="student-list">
+                <!-- List items here -->
+            </ul>
+        </div>
+    </div>
+    
+    <div id="methodology-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeMethodologyModal()">&times;</span>
+            <h3>Metodologie</h3>
+            <p>Elementul central al hărții interactive este scorul de digitalizare. Pentru calcularea acestuia am solicitat primăriilor informații și date specifice despre aplicațiile și fluxurile digitale pentru cetățeni existente la nivelul unității administrative; despre aplicațiile și fluxurile pentru funcționari; despre soluțiile digitale Smart City implementate.</p>
+            
+            <p><strong>Aplicațiile pentru cetățeni</strong> se referă la soluțiile digitale aflate la dispoziția cetățenilor pentru a interacționa cu administrația locală. Vorbim, mai exact, de servicii publice digitalizate. Adică de soluții electronice menite să scurteze timpul pe care îl petrec cetățenii în interacțiuni cu administrația.</p>
+            
+            <p>În funcție de răspunsurile primite la solicitările de acces la informații de interes public, am împărțit primăriile în mai multe categorii: primării care oferă doar posibilitatea plății online a taxelor și impozitelor, prin Ghișeul.ro sau alte aplicații; primării care oferă, pe lângă plata online a taxelor și impozitelor, și posibilitatea depunerii de documente pe site-ul propriu; primării care au integrat plăți și depuneri de acte într-un portal simplu de servicii electronice; primării care au un sistem integrat de fluxuri digitale, capabil să "lege" soluțiile electronice puse la dispoziția cetățenilor de soluțiile interne folosite de funcționari.</p>
+            
+            <p>Primăriile din ultima categorie au fie un portal complex de servicii electronice, fie o platformă integrată de servicii, capabilă nu doar să înregistreze și elibereze documente, ci să aloce utilizatorilor conturi unice pentru o digitalizare completă a interacțiunii cu administrația.</p>
+            
+            <p><strong>În cazul aplicațiilor pentru funcționari</strong> am evaluat soluțiile și fluxurile digitale puse la dispoziția angajaților primăriei pentru a-și desfășura activitatea. Am împărțit primăriile după patru criterii: cele care nu au implementat soluții/fluxuri digitale interne; cele care pun la dispoziția funcționarilor soluții digitale simple (cele mai frecvente sunt cele legate de activitatea contabilă); cele care au ecosisteme interne parțial digitalizate; cele care fluxuri interne complet digitalizate.</p>
+            
+            <p><strong>Pentru componenta Smart City</strong> am folosit patru categorii de clasificare: primării care nu au implementat nicio soluție Smart City; primării care au un proiect-pilot în desfășurare sau soluții în implementare; primării care au implementat soluții Smart City simple; primării care au implementat soluții Smart City complexe.</p>
+        </div>
+    </div>
+    
+    <script>
+    
+    const STUDENTS = [
+        "Ana-Ștefania Diță, Facultatea de Jurnalism și Științele Comunicării București",
+        "Andreas Ristache, Facultatea de Jurnalism și Științele Comunicării București",
+        "Larisa Pantor, Facultatea de Jurnalism și Științele Comunicării București",
+        "Ștefana Baciu, Facultatea de Jurnalism și Științele Comunicării București",
+        "Anca Samoilă, Facultatea de Istorie București",
+        "Andreea-Bianca Ghiurcă, Facultatea de Jurnalism și Științele Comunicării București",
+        "Maria Ciorîngă, Facultatea de Jurnalism și Științele Comunicării București",
+        "Ilinca Staicu, Facultatea de Istorie București",
+        "Alessia Marincat, Facultatea de Științe ale Guvernării și Comunicării Timișoara",
+        "Cristina Racolta, Facultatea de Științe ale Guvernării și Comunicării Timișoara",
+        "Roberta Miclea, Facultatea de Științe ale Guvernării și Comunicării Timișoara",
+        "Daiana Orban, Facultatea de Științe ale Guvernării și Comunicării Timișoara",
+        "Amalia Mirca, Facultatea de Științe ale Guvernării și Comunicării Timișoara",
+        "Denisa Ursuț, Facultatea de Științe ale Guvernării și Comunicării Timișoara",
+        "Alexandra Cismaru, Facultatea de Științe ale Guvernării și Comunicării Timișoara",
+        "Oana Stepan, Facultatea de Științe ale Guvernării și Comunicării Timișoara",
+        "Alexandra- Maria Druță, Facultatea de Științe ale Guvernării și Comunicării Timișoara",
+        "Andrei Stelescu, Facultatea de Științe ale Guvernării și Comunicării Timișoara",
+        "Alice Ștefania Marcu, Facultatea de Științe ale Guvernării și Comunicării Timișoara",
+        "Miruna Ispas, Facultatea de Științe ale Guvernării și Comunicării Timișoara",
+        "Dan Mardare, Facultatea de Științe ale Guvernării și Comunicării Timișoara",
+        "Andreea Rață, Facultatea de Științe ale Guvernării și Comunicării Timișoara",
+        "Andreea Azarov, Facultatea de Științe ale Guvernării și Comunicării Timișoara",
+        "Iulia Ostace, Facultatea de Științe ale Guvernării și Comunicării Timișoara",
+        "Giulia Istrate, Facultatea de Litere Iași",
+        "Aurora Denisa Șarig, Facultatea de Litere Iași",
+        "Carolina Daraban, Facultatea de Litere Iași",
+        "Alexandra Bejenaru, Facultatea de Litere Iași",
+        "Maria-Alexandra Țari, Facultatea de Litere Iași",
+        "Laura Bacușcă, Facultatea de Litere Iași",
+        "Alexandru Obreja, Facultatea de Litere Iași",
+        "Adela Solodchi, Facultatea de Litere Iași",
+        "Bianca Pădurariu, Facultatea de Litere Iași"
+    ];
+
+    function openStudentModal() {
+        const list = document.getElementById('student-list');
+        if (list.children.length === 0) {
+            STUDENTS.forEach(student => {
+                const li = document.createElement('li');
+                li.textContent = student;
+                list.appendChild(li);
+            });
+        }
+        document.getElementById('student-modal').style.display = "block";
+    }
+
+    function closeStudentModal() {
+        document.getElementById('student-modal').style.display = "none";
+    }
+    
+    function openMethodologyModal() {
+        document.getElementById('methodology-modal').style.display = "block";
+    }
+    
+    function closeMethodologyModal() {
+        document.getElementById('methodology-modal').style.display = "none";
+    }
+    
+    function toggleSearch() {
+        const wrapper = document.getElementById('search-input-wrapper');
+        wrapper.classList.add('active');
+        document.getElementById('search-input').focus();
+    }
+    
+    function closeSearch() {
+        const wrapper = document.getElementById('search-input-wrapper');
+        const results = document.getElementById('search-results');
+        wrapper.classList.remove('active');
+        results.classList.remove('active');
+        document.getElementById('search-input').value = '';
+    }
+    
+    function searchCity(query) {
+        const results = document.getElementById('search-results');
+        
+        if (!query || query.length < 2 || !DATA) {
+            results.classList.remove('active');
+            return;
+        }
+        
+        const normalizedQuery = query.toLowerCase().trim();
+        const matches = DATA.uats.filter(u => 
+            u.name.toLowerCase().includes(normalizedQuery) ||
+            u.judet.toLowerCase().includes(normalizedQuery)
+        ).slice(0, 10);
+        
+        if (matches.length === 0) {
+            results.innerHTML = `
+                <div class="search-no-results">
+                    <i class="fas fa-search"></i>
+                    Niciun UAT găsit pentru "${query}"
+                </div>
+            `;
+        } else {
+            results.innerHTML = matches.map(u => `
+                <div class="search-result-item" onclick="selectSearchResult('${u.name}')">
+                    <div class="city-name">${u.name}</div>
+                    <div class="city-region">
+                        <i class="fas fa-map-marker-alt"></i>
+                        ${u.judet} · ${u.regiune}
+                    </div>
+                </div>
+            `).join('');
+        }
+        results.classList.add('active');
+    }
+    
+    function selectSearchResult(cityName) {
+        const city = DATA.uats.find(u => u.name === cityName);
+        if (city) {
+            
+            document.getElementById('filter-region').value = 'all';
+            applyFilters();
+            
+            
+            selectedUAT = city.name;
+            updateCircles();
+            updatePanel(city);
+            showPanel();
+            
+            // Zoom to the city
+            if (city.lat && city.lng) {
+                const [x, y] = projection([city.lng, city.lat]);
+                svgMap.transition().duration(750).call(
+                    zoomBehavior.transform,
+                    d3.zoomIdentity.translate(viewWidth / 2 - x * 2, viewHeight / 2 - y * 2).scale(2)
+                );
+            }
+            
+            closeSearch();
+        }
+    }
+
+    
+    window.onclick = function(event) {
+        const studentModal = document.getElementById('student-modal');
+        const methodologyModal = document.getElementById('methodology-modal');
+        if (event.target == studentModal) {
+            studentModal.style.display = "none";
+        }
+        if (event.target == methodologyModal) {
+            methodologyModal.style.display = "none";
+        }
+        
+        if (!event.target.closest('#search-container')) {
+            const results = document.getElementById('search-results');
+            if (results) results.classList.remove('active');
+        }
+    }
+    
+    
+    function toggleInfoTooltip(tooltipId) {
+        const tooltip = document.getElementById(tooltipId);
+        const allTooltips = document.querySelectorAll('.info-tooltip');
+        
+        
+        allTooltips.forEach(t => {
+            if (t.id !== tooltipId) {
+                t.classList.remove('show');
+            }
+        });
+        
+        
+        tooltip.classList.toggle('show');
+    }
+    
+    
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.info-btn') && !e.target.closest('.info-tooltip')) {
+            document.querySelectorAll('.info-tooltip').forEach(t => t.classList.remove('show'));
+        }
+    });
+    
+    
+    function toggleFilters() {
+        const toggle = document.querySelector('.filters-toggle');
+        const content = document.getElementById('filters-content');
+        toggle.classList.toggle('active');
+        content.classList.toggle('visible');
+    }
+    
+    let DATA = null;
+    let countiesData = null;
+    let filteredData = [];
+    
+    const colorScales = {
+        scor_digitalizare: d3.scaleSequential(d3.interpolateViridis).domain([0, 10]),
+        scor_servicii_cetateni: d3.scaleSequential(d3.interpolateViridis).domain([0, 10]),
+        scor_procese_interne: d3.scaleSequential(d3.interpolateViridis).domain([0, 10]),
+        scor_smart_city: d3.scaleSequential(d3.interpolateViridis).domain([0, 10]),
+        scor_investitie: d3.scaleSequential(d3.interpolateViridis).domain([0, 2]), // Will be updated dynamically
+        cheltuieli_per_capita: d3.scaleSequential(d3.interpolateViridis).domain([0, 500])
+    };
+    
+    
+    const XPW7_UATS = [
+        'Nucet', 'Berbești', 'Sovata', 'Săcueni', 'Salonta', 'Murfatlar', 'Ardud', 
+        'Babadag', 'Moinești', 'Plopeni', 'Isaccea', 'Iernut', 'RoșioriI de Vede',
+        'Târgu Frumos', 'Zlatna', 'Marghita', 'Tălmaciu', 'Agnita', 'Ocnele Mari',
+        'Constanța', 'Fălticeni', 'Fetești', 'Buzău', 'Baia Mare', 'Mioveni',
+        'Covasna', 'Aiud', 'Piatra Neamț', 'Rădăuți', 'Turceni', 'Urziceni', 'Onești'
+    ];
+    
+    const maxValues = {
+        scor_digitalizare: 10,
+        scor_servicii_cetateni: 10,
+        scor_procese_interne: 10,
+        scor_smart_city: 10,
+        scor_investitie: 2, // Will be updated dynamically based on data
+        cheltuieli_per_capita: 500 // Will be updated dynamically based on data
+    };
+    
+    const indicatorLabels = {
+        scor_digitalizare: 'Scor digitalizare',
+        scor_servicii_cetateni: 'Scor servicii cetățeni',
+        scor_procese_interne: 'Scor procese interne',
+        scor_smart_city: 'Scor Smart City',
+        scor_investitie: 'Eficiență investiție',
+        cheltuieli_per_capita: 'Cheltuieli per capita'
+    };
+    
+    
+    let currentIndicator = 'scor_digitalizare';
+    let selectedUAT = null;
+    let svgMap, gMap, projection, pathMap, zoomBehavior;
+    let viewWidth, viewHeight;
+    
+    
+    let categoryMaxes = {};
+    
+    async function init() {
+        const container = document.getElementById('map-container');
+        viewWidth = container.clientWidth;
+        viewHeight = container.clientHeight;
+        
+        svgMap = d3.select("#map-container")
+            .append("svg")
+            .attr("width", "100%")
+            .attr("height", "100%")
+            .attr("viewBox", `0 0 ${viewWidth} ${viewHeight}`);
+        
+        gMap = svgMap.append("g");
+        
+        
+        zoomBehavior = d3.zoom()
+            .scaleExtent([0.8, 8])
+            .on("zoom", e => gMap.attr("transform", e.transform));
+        svgMap.call(zoomBehavior);
+        
+        setupEventListeners();
+
+        try {
+            
+            const [dataRes, geoRes, localitatiRes] = await Promise.all([
+                d3.json('digitalizare_data.json'),
+                d3.json('romania.geojson'),
+                d3.json('localitati.geojson') 
+            ]);
+
+            DATA = dataRes;
+            countiesData = geoRes;
+            
+            
+            const normalize = str => str ? str.toLowerCase().trim().replace(/ă/g, 'a').replace(/â/g, 'a').replace(/î/g, 'i').replace(/ș/g, 's').replace(/ț/g, 't').replace(/-/g, ' ').replace(/\s+/g, ' ') : '';
+
+            DATA.uats.forEach(uat => {
+                const uatName = normalize(uat.name);
+                const uatJudet = normalize(uat.judet);
+
+                const match = localitatiRes.features.find(f => {
+                    const p = f.properties;
+                    const geoName = normalize(p.name || p.nume || p.uat || p.text);
+                    const geoJudet = normalize(p.judet || p.county || p.jud || p.county_name);
+                    
+                    return geoName === uatName && (geoJudet ? geoJudet === uatJudet : true);
+                });
+
+                if (match && match.geometry && match.geometry.coordinates) {
+                    uat.lng = match.geometry.coordinates[0];
+                    uat.lat = match.geometry.coordinates[1];
+                }
+                
+                
+                if (uat.name === 'Cluj Napoca' && (!uat.lat || !uat.lng)) {
+                    uat.lat = 46.7712;
+                    uat.lng = 23.6236;
+                }
+            });
+            
+            
+            filteredData = [...DATA.uats];
+
+            
+            categoryMaxes = {
+                scor_servicii_cetateni: 10,
+                scor_procese_interne: 10,
+                scor_smart_city: 10,
+                cost_tic: Math.max(...DATA.uats.map(d => d.cost_tic || 0)),
+                cost_cetateni: Math.max(...DATA.uats.map(d => d.cost_cetateni || 0)),
+                cost_interne: Math.max(...DATA.uats.map(d => d.cost_interne || 0)),
+                cost_smart_city: Math.max(...DATA.uats.map(d => d.cost_smart_city || 0)),
+                eficienta: Math.max(...DATA.uats.map(d => d.eficienta_investitie || 0))
+            };
+
+            
+            const scorInvestitieValues = DATA.uats
+                .map(d => d.scor_investitie || 0)
+                .filter(v => v !== null && v !== undefined)
+                .sort((a, b) => a - b);
+            
+            
+            const percentile95Index = Math.floor(scorInvestitieValues.length * 0.95);
+            const scorInvestitieMax = Math.max(2, Math.ceil(scorInvestitieValues[percentile95Index] || 2));
+            
+            
+            colorScales.scor_investitie = d3.scaleSequential(d3.interpolateViridis).domain([0, scorInvestitieMax]);
+            maxValues.scor_investitie = scorInvestitieMax;
+            
+            
+            const cheltuieliValues = DATA.uats
+                .map(d => d.cheltuieli_per_capita || 0)
+                .filter(v => v !== null && v !== undefined)
+                .sort((a, b) => a - b);
+            const cheltuieli95Index = Math.floor(cheltuieliValues.length * 0.95);
+            const cheltuieliMax = Math.ceil(cheltuieliValues[cheltuieli95Index] || 500);
+            colorScales.cheltuieli_per_capita = d3.scaleSequential(d3.interpolateViridis).domain([0, cheltuieliMax]);
+            maxValues.cheltuieli_per_capita = cheltuieliMax;
+
+            updateHeaderStats();
+            populateProviderDropdowns();
+
+            projection = d3.geoMercator()
+                .fitExtent([[20, 20], [viewWidth - 20, viewHeight - 20]], countiesData);
+            pathMap = d3.geoPath().projection(projection);
+            
+            drawMap();
+            updateLegend();
+
+        } catch (error) {
+            console.error("Error loading data:", error);
+            document.getElementById('map-container').innerHTML = `
+                <div style="display:flex; justify-content:center; align-items:center; height:100%; flex-direction:column; text-align:center; padding:20px;">
+                    <i class="fas fa-exclamation-triangle" style="font-size:3rem; color:#dc3545; margin-bottom:15px;"></i>
+                    <h3>Eroare la încărcarea datelor</h3>
+                    <p>Asigurați-vă că fișierele <strong>digitalizare_data.json</strong>, <strong>romania.geojson</strong> și <strong>localitati.geojson</strong> sunt în același folder.</p>
+                    <p style="font-size:0.9rem; color:#666; margin-top:10px;">Notă: Din motive de securitate, browserele nu permit încărcarea fișierelor locale direct. Vă rugăm să folosiți un server local (ex: Live Server în VS Code).</p>
+                    <pre style="background:#f0f0f0; padding:10px; margin-top:10px; border-radius:4px; text-align:left; font-size:0.8rem;">${error.message}</pre>
+                </div>
+            `;
+        }
+        
+        window.addEventListener('resize', resize);
+    }
+    
+    function resize() {
+        const container = document.getElementById('map-container');
+        viewWidth = container.clientWidth;
+        viewHeight = container.clientHeight;
+        
+        d3.select("#map-container svg").attr("viewBox", `0 0 ${viewWidth} ${viewHeight}`);
+        
+        if (countiesData) {
+            projection.fitExtent([[20, 20], [viewWidth - 20, viewHeight - 20]], countiesData);
+            gMap.selectAll("path.county").attr("d", pathMap);
+            updateCountyLabels(countiesData.features);
+        }
+        updateCirclePositions();
+    }
+    
+    function updateHeaderStats() {
+        
+        document.getElementById('stat-total-uats').textContent = "297";
+        document.getElementById('stat-avg-score').textContent = DATA.stats.avg_scor_digitalizare.toFixed(2);
+        
+        const totalCheltuieli = DATA.uats.reduce((sum, u) => sum + (u.cheltuieli_total || 0), 0);
+        document.getElementById('stat-total-spend').textContent = formatCurrency(totalCheltuieli, true);
+    }
+    
+    
+    function populateProviderDropdowns() {
+    const getSortedProviders = (categoryObj) => {
+        if (!categoryObj) return [];
+        return Object.entries(categoryObj)
+            .map(([name, data]) => ({ name: name, ...data }))
+            .sort((a, b) => b.count - a.count);
+    };
+
+    const allProviders = getSortedProviders(DATA.furnizori);
+    
+    const populate = (selectId, providers) => {
+        const select = document.getElementById(selectId);
+        // Clear existing except first
+        while (select.options.length > 1) select.remove(1);
+        
+        providers.slice(0, 100).forEach(p => {
+            const opt = document.createElement('option');
+            opt.value = p.name;
+            opt.textContent = p.name;
+            select.appendChild(opt);
+        });
+    };
+
+    
+    populate('filter-provider-tic', allProviders);
+    populate('filter-provider-solutii', allProviders);
+    populate('filter-provider-smart', allProviders);
+}
+    
+    function setupEventListeners() {
+        document.getElementById('filter-region').addEventListener('change', applyFilters);
+        
+        document.querySelectorAll('.indicator-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.indicator-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentIndicator = btn.dataset.indicator;
+                updateLegend();
+                applyFilters();
+            });
+        });
+        
+        document.getElementById('filter-strategy').addEventListener('change', applyFilters);
+        document.getElementById('filter-old-systems').addEventListener('change', applyFilters);
+        document.getElementById('filter-transparency').addEventListener('change', applyFilters);
+        
+        
+        document.getElementById('filter-provider-tic').addEventListener('change', function() {
+            if (this.value !== 'all') {
+                document.getElementById('filter-provider-solutii').value = 'all';
+                document.getElementById('filter-provider-smart').value = 'all';
+            }
+            applyFilters();
+        });
+        document.getElementById('filter-provider-solutii').addEventListener('change', function() {
+            if (this.value !== 'all') {
+                document.getElementById('filter-provider-tic').value = 'all';
+                document.getElementById('filter-provider-smart').value = 'all';
+            }
+            applyFilters();
+        });
+        document.getElementById('filter-provider-smart').addEventListener('change', function() {
+            if (this.value !== 'all') {
+                document.getElementById('filter-provider-tic').value = 'all';
+                document.getElementById('filter-provider-solutii').value = 'all';
+            }
+            applyFilters();
+        });
+    }
+    
+    function applyFilters() {
+        const region = document.getElementById('filter-region').value;
+        const strategy = document.getElementById('filter-strategy').value;
+        const oldSystems = document.getElementById('filter-old-systems').value;
+        const transparency = document.getElementById('filter-transparency').value;
+        const providerTic = document.getElementById('filter-provider-tic').value;
+        const providerSolutii = document.getElementById('filter-provider-solutii').value;
+        const providerSmart = document.getElementById('filter-provider-smart').value;
+        
+        const baseFilteredData = DATA.uats.filter(u => {
+            if (strategy !== 'all' && u.strategie !== strategy) return false;
+            if (oldSystems === 'yes' && !u.sisteme_vechi) return false;
+            if (oldSystems === 'no' && u.sisteme_vechi) return false;
+            if (oldSystems === 'xpw7' && !XPW7_UATS.includes(u.name)) return false;
+            
+            if (transparency !== 'all') {
+                if (transparency === 'nu_au_raspuns' && u.transparenta !== 'nu_au_raspuns' && u.transparenta !== 'nu_raspuns') return false;
+                else if (transparency !== 'nu_au_raspuns' && u.transparenta !== transparency) return false;
+            }
+            
+            if (providerTic !== 'all' && (!u.furnizori || !u.furnizori.includes(providerTic))) return false;
+            if (providerSolutii !== 'all' && (!u.furnizori || !u.furnizori.includes(providerSolutii))) return false;
+            if (providerSmart !== 'all' && (!u.furnizori || !u.furnizori.includes(providerSmart))) return false;
+            
+            return true;
+        });
+        
+        filteredData = baseFilteredData.filter(u => {
+            if (region !== 'all' && u.regiune !== region) return false;
+            return true;
+        });
+        
+        const providerTotalDiv = document.getElementById('provider-total');
+        let totalVal = 0;
+        let showTotal = false;
+
+        if (providerTic !== 'all') {
+            totalVal = filteredData.reduce((acc, curr) => acc + (curr.cost_tic || 0), 0);
+            showTotal = true;
+        } else if (providerSolutii !== 'all') {
+            totalVal = filteredData.reduce((acc, curr) => acc + (curr.cost_cetateni || 0) + (curr.cost_interne || 0), 0);
+            showTotal = true;
+        } else if (providerSmart !== 'all') {
+            totalVal = filteredData.reduce((acc, curr) => acc + (curr.cost_smart_city || 0), 0);
+            showTotal = true;
+        }
+
+        if (showTotal) {
+            document.getElementById('provider-total-value').textContent = formatCurrency(totalVal);
+            providerTotalDiv.style.display = 'block';
+        } else {
+            providerTotalDiv.style.display = 'none';
+        }
+        
+        gMap.selectAll(".region-avg-label").remove();
+        gMap.selectAll(".region-name-label").remove();
+        gMap.selectAll(".click-hint").remove();
+        
+        gMap.selectAll("path.county")
+            .classed("region-colored", false)
+            .style("fill", null)
+            .attr("fill", "#e8e8e8")
+            .style("display", null);
+        
+        if (region !== 'all' && countiesData) {
+            const regionFeatures = countiesData.features.filter(f => {
+                const geoRegion = f.properties.region;
+                const regionMap = {
+                    'Nord-Est': 'Nord-Est',
+                    'Sud-Est': 'Sud-Est', 
+                    'Sud': 'Sud-Muntenia',
+                    'Sud-Muntenia': 'Sud-Muntenia',
+                    'Sud-Vest': 'Sud-Vest',
+                    'Vest': 'Vest',
+                    'Nord-Vest': 'Nord-Vest',
+                    'Centru': 'Centru',
+                    'București-Ilfov': 'București-Ilfov'
+                };
+                const mappedRegion = regionMap[geoRegion] || geoRegion;
+                return mappedRegion === region;
+            });
+            
+            const regionCountyNames = regionFeatures.map(f => f.properties.name);
+            
+            if (regionFeatures.length > 0) {
+                const regionUats = baseFilteredData.filter(u => u.regiune === region);
+                let avgScore = 0;
+                if (regionUats.length > 0) {
+                    const sum = regionUats.reduce((acc, u) => acc + (u[currentIndicator] || 0), 0);
+                    avgScore = sum / regionUats.length;
+                }
+                
+                const colorScale = colorScales[currentIndicator];
+                const regionColor = colorScale(avgScore);
+                
+                gMap.selectAll("path.county")
+                    .filter(d => regionCountyNames.includes(d.properties.name))
+                    .classed("region-colored", true)
+                    .transition()
+                    .duration(300)
+                    .style("fill", regionColor);
+                
+                const regionCollection = { type: "FeatureCollection", features: regionFeatures };
+                const centroid = d3.geoCentroid(regionCollection);
+                const [cx, cy] = projection(centroid);
+                
+                gMap.append("text")
+                    .attr("class", "region-avg-label")
+                    .attr("x", cx)
+                    .attr("y", cy - 3)
+                    .text(avgScore.toFixed(2));
+                
+                gMap.append("text")
+                    .attr("class", "region-name-label")
+                    .attr("x", cx)
+                    .attr("y", cy + 10)
+                    .text(`${region} (${regionUats.length} UAT-uri)`);
+            }
+            
+            gMap.selectAll(".uat-circle").style("display", "none");
+            
+        } else if (countiesData) {
+            gMap.selectAll(".uat-circle").style("display", null);
+            updateCircles();
+        }
+        
+        updateDistributionChart();
+    }
+    
+    function updateLegend() {
+        const scale = colorScales[currentIndicator];
+        const max = maxValues[currentIndicator];
+        
+        const legendBar = document.getElementById('indicator-legend-bar');
+        legendBar.innerHTML = '';
+        
+        const steps = 20;
+        for (let i = 0; i < steps; i++) {
+            const div = document.createElement('div');
+            div.style.flex = '1';
+            div.style.backgroundColor = scale(i / steps * max);
+            legendBar.appendChild(div);
+        }
+        
+        document.getElementById('indicator-legend-max').textContent = max;
+    }
+    
+    function drawMap() {
+        if (countiesData) {
+            gMap.selectAll("path.county")
+                .data(countiesData.features)
+                .join("path")
+                .attr("class", "county")
+                .attr("d", pathMap);
+            
+            updateCountyLabels(countiesData.features);
+        }
+        
+        updateCircles();
+        updateDistributionChart();
+    }
+    
+    function updateCountyLabels(features) {
+        const labels = gMap.selectAll("text.county-label")
+            .data(features, d => d.properties.name);
+        
+        labels.exit().remove();
+        
+        labels.enter()
+            .append("text")
+            .attr("class", "county-label")
+            .merge(labels)
+            .attr("x", d => pathMap.centroid(d)[0])
+            .attr("y", d => pathMap.centroid(d)[1])
+            .text(d => d.properties.name);
+    }
+    
+    function updateCircles() {
+        const colorScale = colorScales[currentIndicator];
+        
+        const providerTic = document.getElementById('filter-provider-tic').value;
+        const providerSolutii = document.getElementById('filter-provider-solutii').value;
+        const providerSmart = document.getElementById('filter-provider-smart').value;
+        const isProviderMode = providerTic !== 'all' || providerSolutii !== 'all' || providerSmart !== 'all';
+        
+        const circles = gMap.selectAll(".uat-circle")
+            .data(filteredData, d => d.name);
+        
+        circles.exit().remove();
+        
+        const circlesEnter = circles.enter()
+            .append("circle")
+            .attr("class", "uat-circle")
+            .attr("r", 0);
+        
+        circles.merge(circlesEnter)
+            .attr("cx", d => projection([d.lng, d.lat])[0])
+            .attr("cy", d => projection([d.lng, d.lat])[1])
+            .attr("fill", d => {
+                if (d.transparenta === 'nu_au_raspuns' || d.transparenta === 'nu_raspuns') {
+                    return '#dc3545';
+                }
+                if (d[currentIndicator] === null) {
+                    return '#ccc';
+                }
+                return colorScale(d[currentIndicator]);
+            })
+            .attr("fill-opacity", 0.85)
+            .classed("selected", d => selectedUAT === d.name)
+            .on("mouseover", showTooltip)
+            .on("mouseout", hideTooltip)
+            .on("click", selectUAT)
+            .transition()
+            .duration(500)
+            .attr("r", d => {
+                if (isProviderMode) {
+                    let cost = 0;
+                    if (providerTic !== 'all') cost = d.cost_tic || 0;
+                    else if (providerSolutii !== 'all') cost = (d.cost_cetateni || 0) + (d.cost_interne || 0);
+                    else if (providerSmart !== 'all') cost = d.cost_smart_city || 0;
+                    return Math.max(2, Math.sqrt(cost / 50000) + 1);
+                }
+                return 6;
+            });
+    }
+    
+    function updateCirclePositions() {
+        gMap.selectAll(".uat-circle")
+            .attr("cx", d => projection([d.lng, d.lat])[0])
+            .attr("cy", d => projection([d.lng, d.lat])[1]);
+    }
+    
+    function showTooltip(event, d) {
+        const tooltip = document.getElementById('tooltip');
+        tooltip.style.display = 'block';
+        
+        let displayUatName = d.name === 'Cluj Napoca' ? 'Cluj-Napoca' : d.name;
+        let details = `<div class="name">${displayUatName}</div>`;
+        details += `<div class="detail">${d.judet}, ${d.regiune}</div>`;
+        
+        const indicatorValue = d[currentIndicator];
+        const indicatorLabel = indicatorLabels[currentIndicator];
+        const maxVal = maxValues[currentIndicator];
+        
+        let valueDisplay = (indicatorValue === null) ? 'N/A' : indicatorValue.toFixed(2);
+
+        if (currentIndicator === 'cheltuieli_per_capita' || currentIndicator === 'scor_investitie') {
+            details += `<div class="detail"><strong>${indicatorLabel}:</strong> ${valueDisplay}</div>`;
+        } else {
+            details += `<div class="detail"><strong>${indicatorLabel}:</strong> ${valueDisplay} / ${maxVal}</div>`;
+        }
+        
+        const strategyFilter = document.getElementById('filter-strategy').value;
+        if (strategyFilter !== 'all') {
+            const strategyLabels = {
+                'da_strategie': '✓ Are strategie',
+                'capitol_in_strategie': '~ Capitol în strategie',
+                'nu_are': '✗ Fără strategie'
+            };
+            details += `<div class="detail">${strategyLabels[d.strategie] || d.strategie}</div>`;
+        }
+        
+        const oldSystemsFilter = document.getElementById('filter-old-systems').value;
+        if (oldSystemsFilter !== 'all') {
+            details += `<div class="detail">${d.sisteme_vechi ? '⚠ Sisteme vechi: ' + (d.sisteme_vechi_count || 'Da') : '✓ Fără sisteme vechi'}</div>`;
+        }
+        
+        const transparencyFilter = document.getElementById('filter-transparency').value;
+        if (transparencyFilter !== 'all') {
+            const transpLabels = {
+                'complet': '✓ Răspuns complet',
+                'incomplet_revenit': '~ Incomplet, revenit',
+                'incomplet_refuzat': '✗ Incomplet, refuzat',
+                'nu_au_raspuns': '✗ Nu a răspuns',
+                'nu_raspuns': '✗ Nu a răspuns'
+            };
+            details += `<div class="detail">${transpLabels[d.transparenta] || d.transparenta}</div>`;
+        }
+        
+        const providerTic = document.getElementById('filter-provider-tic').value;
+        const providerSolutii = document.getElementById('filter-provider-solutii').value;
+        const providerSmart = document.getElementById('filter-provider-smart').value;
+        
+        if (providerTic !== 'all') {
+            const providerName = providerTic.length > 20 ? providerTic.substring(0, 20) + '...' : providerTic;
+            details += `<div class="detail"><strong>Cost ${providerName}:</strong> ${formatCurrency(d.cost_tic || 0)}</div>`;
+        }
+        if (providerSolutii !== 'all') {
+            const providerName = providerSolutii.length > 20 ? providerSolutii.substring(0, 20) + '...' : providerSolutii;
+            details += `<div class="detail"><strong>Cost ${providerName}:</strong> ${formatCurrency((d.cost_cetateni || 0) + (d.cost_interne || 0))}</div>`;
+        }
+        if (providerSmart !== 'all') {
+            const providerName = providerSmart.length > 20 ? providerSmart.substring(0, 20) + '...' : providerSmart;
+            details += `<div class="detail"><strong>Cost ${providerName}:</strong> ${formatCurrency(d.cost_smart_city || 0)}</div>`;
+        }
+        
+        tooltip.innerHTML = details;
+        tooltip.style.left = (event.pageX + 12) + 'px';
+        tooltip.style.top = (event.pageY - 10) + 'px';
+    }
+    
+    function hideTooltip() {
+        document.getElementById('tooltip').style.display = 'none';
+    }
+    
+    function selectUAT(event, d) {
+        selectedUAT = d.name;
+        updateCircles();
+        updatePanel(d);
+        showPanel();
+    }
+    
+    function showPanel() {
+        document.getElementById('panel').classList.add('visible');
+    }
+    
+    function closePanel() {
+        document.getElementById('panel').classList.remove('visible');
+        selectedUAT = null;
+        updateCircles();
+    }
+    
+    
+    function getInfoCetateni(scor) {
+        if (scor === null) return 'Nu există date.';
+        if (scor >= 10) return 'Primăria are o platformă integrată de servicii electronice.';
+        if (scor >= 8) return 'Primăria are un portal de servicii electronice cu fluxuri de lucru interne.';
+        if (scor >= 6) return 'Primăria are un portal de servicii electronice.';
+        if (scor >= 4) return 'Primăria oferă posibilitatea de a plăti online taxele și impozitele prin Ghișeul.ro sau altă aplicație și depunerea de documente și petiții pe site-ul propriu.';
+        if (scor >= 2) return 'Primăria oferă doar plata online a taxelor și impozitelor prin Ghișeul.ro sau altă aplicație.';
+        return 'Primăria nu are niciun serviciu public digitalizat.';
+    }
+    
+    function getInfoFunctionari(scor) {
+        if (scor === null) return 'Nu există date.';
+        if (scor >= 10) return 'Primăria are procesele interne de lucru complet digitalizate.';
+        if (scor >= 6.67) return 'Primăria are procesele interne de lucru parțial digitalizate.';
+        if (scor >= 3.33) return 'Primăria pune la dispoziția funcționarilor din instituție soluții digitale.';
+        return 'Primăria nu pune la dispoziția funcționarilor din instituție soluții și fluxuri digitale.';
+    }
+    
+    function getInfoSmartCity(scor) {
+        if (scor === null) return 'Nu există date.';
+        if (scor >= 10) return 'Primăria a implementat soluții Smart City complexe.';
+        if (scor >= 6.67) return 'Primăria a implementat soluții Smart City simple.';
+        if (scor >= 3.33) return 'Primăria a implementat un proiect pilot sau are soluții în implementare.';
+        return 'Primăria nu a implementat nicio soluție Smart City.';
+    }
+    
+    function getInfoSistemeVechi(areVechi, count) {
+        if (!areVechi) {
+            return 'Primăria nu are instalate sisteme de operare uzate moral sau alte programe pentru care nu se mai oferă actualizări.';
+        }
+        if (count) {
+            return `Primăria are ${count} calculatoare pe care rulează Windows 7/Windows XP.`;
+        }
+        return 'Primăria are instalate sisteme de operare uzate moral sau alte programe pentru care nu se mai oferă actualizări.';
+    }
+    
+    function updatePanel(d) {
+        const container = document.getElementById('panel-content');
+        const isNoResponse = d.transparenta === 'nu_au_raspuns' || d.transparenta === 'nu_raspuns';
+        const scoreColor = isNoResponse ? '#999' : getScoreColor(d.scor_digitalizare);
+        
+        const displayUatName = d.name === 'Cluj Napoca' ? 'Cluj-Napoca' : d.name;
+
+        const strategyBadge = {
+            'da_strategie': '<span class="status-badge positive"><i class="fas fa-check"></i> Strategie adoptată</span>',
+            'capitol_in_strategie': '<span class="status-badge warning"><i class="fas fa-minus"></i> Capitol în strategie</span>',
+            'nu_are': '<span class="status-badge negative"><i class="fas fa-times"></i> Fără strategie</span>',
+            'necunoscut': '<span class="status-badge negative">Necunoscut</span>'
+        }[d.strategie] || '';
+        
+        const transparencyBadge = {
+            'complet': '<span class="status-badge positive"><i class="fas fa-check"></i> Răspuns complet</span>',
+            'incomplet_revenit': '<span class="status-badge warning"><i class="fas fa-clock"></i> Incomplet, revenit</span>',
+            'incomplet_refuzat': '<span class="status-badge negative"><i class="fas fa-exclamation"></i> Incomplet, refuzat</span>',
+            'nu_raspuns': '<span class="status-badge negative"><i class="fas fa-ban"></i> Nu a răspuns</span>',
+            'nu_au_raspuns': '<span class="status-badge negative"><i class="fas fa-ban"></i> Nu a răspuns</span>',
+            'necunoscut': '<span class="status-badge warning"><i class="fas fa-question"></i> Stare necunoscută</span>'
+        }[d.transparenta] || '';
+        
+        const eficientaScore = d.eficienta_investitie || 0;
+        
+        container.innerHTML = `
+            <h2>${displayUatName}</h2>
+            <span class="region-tag">${d.judet}, ${d.regiune}</span>
+            
+            <div class="big-stat">
+                <div class="big-number" style="color: ${scoreColor}">${(isNoResponse || d.scor_digitalizare === null) ? 'N/A' : d.scor_digitalizare.toFixed(2)}</div>
+                <div class="big-label">Scor digitalizare (din 10)</div>
+            </div>
+            
+            <div class="site-year-info ${!d.an_site || d.an_site === 'nan' ? 'no-data' : ''}">
+                <i class="fas fa-globe"></i>
+                <div>
+                    <div class="label">Anul realizării site-ului</div>
+                    <div class="value">${(!d.an_site || d.an_site === 'nan') ? 'Nu a răspuns' : d.an_site}</div>
+                </div>
+            </div>
+            
+            <div class="section-title">Scoruri componente</div>
+            ${makeBar('Aplicații pentru cetățeni', d.scor_servicii_cetateni, categoryMaxes.scor_servicii_cetateni, null, true, false, isNoResponse)}
+            <div class="info-text">${isNoResponse ? 'Nu a răspuns la chestionar.' : getInfoCetateni(d.scor_servicii_cetateni)}</div>
+            ${makeBar('Aplicații pentru funcționari', d.scor_procese_interne, categoryMaxes.scor_procese_interne, null, true, false, isNoResponse)}
+            <div class="info-text">${isNoResponse ? 'Nu a răspuns la chestionar.' : getInfoFunctionari(d.scor_procese_interne)}</div>
+            ${makeBar('Soluții Smart City', d.scor_smart_city, categoryMaxes.scor_smart_city, null, true, false, isNoResponse)}
+            <div class="info-text">${isNoResponse ? 'Nu a răspuns la chestionar.' : getInfoSmartCity(d.scor_smart_city)}</div>
+            
+            <div class="section-title">Informații generale</div>
+            <div class="stat-grid">
+                <div class="stat-item">
+                    <div class="value">${d.populatie ? d.populatie.toLocaleString() : 'N/A'}</div>
+                    <div class="label">Populație</div>
+                </div>
+                <div class="stat-item">
+                    <div class="value">${d.angajati || 'N/A'}</div>
+                    <div class="label">Angajați</div>
+                </div>
+                <div class="stat-item">
+                    <div class="value">${d.echipamente || 'N/A'}</div>
+                    <div class="label">ECHIPAMENTE TIC</div>
+                </div>
+                <div class="stat-item">
+                    <div class="value">${d.echipamente_per_angajat ? d.echipamente_per_angajat.toFixed(2) : 'N/A'}</div>
+                    <div class="label">Echip./Angajat</div>
+                </div>
+            </div>
+            
+            <div class="section-title">Cheltuieli 2020-2025</div>
+            <div class="info-text">Include, achiziții TIC, soluții digitale, pagină web și mentenanță.</div>
+            <div class="stat-grid">
+                <div class="stat-item">
+                    <div class="value${isNoResponse ? ' no-response' : ''}">${isNoResponse ? 'Nu a răspuns' : formatCurrency(d.cheltuieli_total || 0)}</div>
+                    <div class="label">Total</div>
+                </div>
+                <div class="stat-item">
+                    <div class="value${isNoResponse ? ' no-response' : ''}">${isNoResponse ? 'Nu a răspuns' : formatCurrency(d.cheltuieli_per_capita || 0)}</div>
+                    <div class="label">Per capita</div>
+                </div>
+            </div>
+            <div class="section-title">Cheltuieli Digitalizare</div>
+            ${makeBar('Echipamente TIC', d.cost_tic, categoryMaxes.cost_tic, null, true, true, isNoResponse)}
+            ${makeBar('Aplicații pentru cetățeni', d.cost_cetateni, categoryMaxes.cost_cetateni, null, true, true, isNoResponse)}
+            ${makeBar('Aplicații pentru funcționari', d.cost_interne, categoryMaxes.cost_interne, null, true, true, isNoResponse)}
+            ${makeBar('Soluții Smart City', d.cost_smart_city, categoryMaxes.cost_smart_city, null, true, true, isNoResponse)}
+            
+            <div class="section-title">Eficiență investiție</div>
+            <p class="efficiency-explanation">Puncte de digitalizare obținute per 100 lei investiți per capita. Valori mai mari indică eficiență mai bună.</p>
+            ${makeBar('Scor eficiență', eficientaScore, categoryMaxes.eficienta, null, true, false, isNoResponse)}
+            
+            <div class="section-title">Strategie digitalizare</div>
+            <div style="margin-bottom: 8px;">${strategyBadge}</div>
+            ${d.monitorizat ? '<span class="status-badge positive"><i class="fas fa-chart-line"></i> Monitorizată</span>' : ''}
+            
+            <div class="section-title">Infrastructură</div>
+            <div style="margin-bottom: 8px;">
+                ${d.sisteme_vechi ? 
+                    `<span class="status-badge negative"><i class="fas fa-desktop"></i> Sisteme vechi${d.sisteme_vechi_count ? ` (${d.sisteme_vechi_count})` : ''}</span>` : 
+                    '<span class="status-badge positive"><i class="fas fa-desktop"></i> Fără sisteme vechi</span>'}
+            </div>
+            <div class="info-text">${getInfoSistemeVechi(d.sisteme_vechi, d.sisteme_vechi_count)}</div>
+            <div style="margin-bottom: 8px;">
+                ${d.personal_instruit ? 
+                    '<span class="status-badge positive"><i class="fas fa-graduation-cap"></i> Personal instruit</span>' : 
+                    '<span class="status-badge warning"><i class="fas fa-graduation-cap"></i> Personal neinstruit</span>'}
+            </div>
+            
+            <div class="section-title">TRANSPARENȚĂ LEGEA 544/2001</div>
+            <div class="info-text">Legea 544/2001 permite accesul la informații publice pentru orice cetățean. O instituție publică are la dispoziție cel mult 30 de zile să răspundă unei solicitări formulate în baza Legii 544/2001.</div>
+            
+            <div style="margin-bottom: 10px;">${transparencyBadge}</div>
+
+            ${d.has_pdf ? 
+                `<a href="raspunsuri/${d.pdf_filename || ('Primăria ' + d.name + '.pdf')}" target="_blank" class="download-btn">
+                    <i class="fas fa-file-pdf"></i> Descarcă răspunsul
+                </a>` : 
+                (d.text_544 ? `
+                <div class="toggle-544">
+                    <button class="toggle-544-btn" onclick="this.classList.toggle('active'); this.nextElementSibling.classList.toggle('show');">
+                        <span><i class="fas fa-info-circle"></i> Vezi explicația</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="toggle-544-content">
+                        <div class="toggle-544-text">${d.text_544.replace(/\\n/g, '<br>')}</div>
+                    </div>
+                </div>` : '')}
+        `;
+    }
+    
+    function makeBar(label, value, max, color, useGradient = false, isCurrency = false, noResponse = false) {
+        if (value === null || value === undefined) value = 0;
+        
+        const pct = max > 0 ? (value / max) * 100 : 0;
+        const displayValue = noResponse ? 'Nu a răspuns' : (isCurrency ? formatCurrency(value) : value.toFixed(2));
+        
+        if (useGradient) {
+            const uniqueId = label.replace(/\s+/g, '-').toLowerCase() + '-' + Math.random().toString(36).substr(2, 9);
+            return `
+                <div class="chart-row">
+                    <div class="chart-label">
+                        <span>${label}</span>
+                        <span class="value${noResponse ? ' no-response' : ''}">${displayValue}</span>
+                    </div>
+                    <div class="bar-bg">
+                        <svg width="100%" height="6" style="display: block;">
+                            <defs>
+                                <linearGradient id="viridis-${uniqueId}" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" style="stop-color: #440154" />
+                                    <stop offset="25%" style="stop-color: #3b528b" />
+                                    <stop offset="50%" style="stop-color: #21918c" />
+                                    <stop offset="75%" style="stop-color: #5ec962" />
+                                    <stop offset="100%" style="stop-color: #fde725" />
+                                </linearGradient>
+                            </defs>
+                            <rect x="0" y="0" width="${noResponse ? 0 : Math.min(pct, 100)}%" height="6" rx="3" fill="url(#viridis-${uniqueId})" />
+                        </svg>
+                    </div>
+                </div>
+            `;
+        }
+        
+        return `
+            <div class="chart-row">
+                <div class="chart-label">
+                    <span>${label}</span>
+                    <span class="value${noResponse ? ' no-response' : ''}">${displayValue}</span>
+                </div>
+                <div class="bar-bg">
+                    <div class="bar-fill" style="width: ${noResponse ? 0 : Math.min(pct, 100)}%; background: ${color}"></div>
+                </div>
+            </div>
+        `;
+    }
+    
+    function updateDistributionChart() {
+        const chartContainer = document.getElementById('bar-chart-container');
+        const indicator = currentIndicator;
+        
+        if (['scor_digitalizare', 'scor_servicii_cetateni', 'scor_procese_interne', 'scor_smart_city'].includes(indicator)) {
+            chartContainer.style.display = 'block';
+            
+            const max = maxValues[indicator];
+            const bins = 5;
+            const binSize = max / bins;
+            const distribution = new Array(bins).fill(0);
+            
+            filteredData.forEach(d => {
+                if (d[indicator] === null || d[indicator] === undefined) return;
+                
+                const binIndex = Math.min(Math.floor(d[indicator] / binSize), bins - 1);
+                distribution[binIndex]++;
+            });
+            
+            const maxCount = Math.max(...distribution);
+            const colorScale = colorScales[indicator];
+            
+            const barsContainer = document.getElementById('distribution-bars');
+            barsContainer.innerHTML = '';
+            
+            distribution.forEach((count, i) => {
+                const barDiv = document.createElement('div');
+                barDiv.className = 'dist-bar';
+                
+                const height = maxCount > 0 ? (count / maxCount) * 35 : 0;
+                const color = colorScale((i + 0.5) * binSize);
+                
+                barDiv.innerHTML = `
+                    <div class="dist-bar-value">${count}</div>
+                    <div class="dist-bar-fill" style="height: ${height}px; background: ${color}"></div>
+                    <div class="dist-bar-label">${(i * binSize).toFixed(1)}-${((i + 1) * binSize).toFixed(1)}</div>
+                `;
+                barsContainer.appendChild(barDiv);
+            });
+        } else {
+            chartContainer.style.display = 'none';
+        }
+    }
+    
+    function getScoreColor(score) {
+        if (score === null || score === undefined) return '#999';
+        if (score >= 7.5) return '#4CAF50';
+        if (score >= 5) return '#FFC107';
+        if (score >= 2.5) return '#FF9800';
+        return '#F44336';
+    }
+    
+    function formatCurrency(value, short = false) {
+        if (!value && value !== 0) return 'N/A';
+        if (value >= 1000000000) return (value / 1000000000).toFixed(2) + ' mld lei';
+        if (value >= 1000000) return (value / 1000000).toFixed(short ? 1 : 2) + ' mil lei';
+        if (value >= 1000) return (value / 1000).toFixed(short ? 0 : 1) + ' mii lei';
+        return value.toFixed(0) + ' lei';
+    }
+    
+    function zoomIn() {
+        svgMap.transition().duration(300).call(zoomBehavior.scaleBy, 1.5);
+    }
+    
+    function zoomOut() {
+        svgMap.transition().duration(300).call(zoomBehavior.scaleBy, 0.67);
+    }
+    
+    function resetZoom() {
+        if (countiesData) {
+            projection.fitExtent([[20, 20], [viewWidth - 20, viewHeight - 20]], countiesData);
+            gMap.selectAll("path.county").transition().duration(500).attr("d", pathMap);
+            updateCirclePositions();
+            updateCountyLabels(countiesData.features);
+        }
+        svgMap.transition().duration(500).call(zoomBehavior.transform, d3.zoomIdentity);
+    }
+    
+    document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
