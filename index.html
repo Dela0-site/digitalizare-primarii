@@ -2357,7 +2357,10 @@
             .sort((a, b) => b.count - a.count);
     };
 
-    const allProviders = getSortedProviders(DATA.furnizori);
+    // Use category-specific provider lists
+    const ticProviders = getSortedProviders(DATA.furnizori_tic);
+    const solutiiProviders = getSortedProviders(DATA.furnizori_solutii);
+    const smartProviders = getSortedProviders(DATA.furnizori_smart);
     
     const populate = (selectId, providers) => {
         const select = document.getElementById(selectId);
@@ -2372,10 +2375,10 @@
         });
     };
 
-    // Show all providers in all dropdowns since category data is not available
-    populate('filter-provider-tic', allProviders);
-    populate('filter-provider-solutii', allProviders);
-    populate('filter-provider-smart', allProviders);
+    // Populate each dropdown with only providers from that category
+    populate('filter-provider-tic', ticProviders);
+    populate('filter-provider-solutii', solutiiProviders);
+    populate('filter-provider-smart', smartProviders);
 }
     
     function setupEventListeners() {
@@ -2439,9 +2442,9 @@
                 else if (transparency !== 'nu_au_raspuns' && u.transparenta !== transparency) return false;
             }
             
-            if (providerTic !== 'all' && (!u.furnizori || !u.furnizori.includes(providerTic))) return false;
-            if (providerSolutii !== 'all' && (!u.furnizori || !u.furnizori.includes(providerSolutii))) return false;
-            if (providerSmart !== 'all' && (!u.furnizori || !u.furnizori.includes(providerSmart))) return false;
+            if (providerTic !== 'all' && (!u.furnizori_tic || !u.furnizori_tic.includes(providerTic))) return false;
+            if (providerSolutii !== 'all' && (!u.furnizori_solutii || !u.furnizori_solutii.includes(providerSolutii))) return false;
+            if (providerSmart !== 'all' && (!u.furnizori_smart || !u.furnizori_smart.includes(providerSmart))) return false;
             
             return true;
         });
