@@ -399,7 +399,7 @@
             font-weight: 600;
             text-transform: uppercase;
             text-align: center;
-            margin-bottom: 6px;
+            margin-bottom: 15px;
             letter-spacing: 0.5px;
         }
         
@@ -407,7 +407,7 @@
             display: flex;
             gap: 4px;
             align-items: flex-end;
-            height: 35px;
+            height: 50px;
             margin-bottom: 2px;
         }
         
@@ -1524,11 +1524,11 @@
             
             .bar-chart-title {
                 font-size: 0.55rem;
-                margin-bottom: 4px;
+                margin-bottom: 12px;
             }
             
             .distribution-bars {
-                height: 35px;
+                height: 45px;
                 gap: 3px;
             }
             
@@ -1672,7 +1672,7 @@
             }
             
             .distribution-bars {
-                height: 30px;
+                height: 40px;
                 gap: 2px;
             }
             
@@ -2080,11 +2080,11 @@
     function selectSearchResult(cityName) {
         const city = DATA.uats.find(u => u.name === cityName);
         if (city) {
-            
+            // Reset region filter to show all
             document.getElementById('filter-region').value = 'all';
             applyFilters();
             
-            
+            // Select the UAT
             selectedUAT = city.name;
             updateCircles();
             updatePanel(city);
@@ -2113,7 +2113,7 @@
         if (event.target == methodologyModal) {
             methodologyModal.style.display = "none";
         }
-        
+        // Close search if clicking outside
         if (!event.target.closest('#search-container')) {
             const results = document.getElementById('search-results');
             if (results) results.classList.remove('active');
@@ -2274,21 +2274,21 @@
                 eficienta: Math.max(...DATA.uats.map(d => d.eficienta_investitie || 0))
             };
 
-            
+            // Calculate dynamic max for scor_investitie based on actual data distribution
             const scorInvestitieValues = DATA.uats
                 .map(d => d.scor_investitie || 0)
                 .filter(v => v !== null && v !== undefined)
                 .sort((a, b) => a - b);
             
-            
+            // Use 95th percentile as max for better color distribution
             const percentile95Index = Math.floor(scorInvestitieValues.length * 0.95);
             const scorInvestitieMax = Math.max(2, Math.ceil(scorInvestitieValues[percentile95Index] || 2));
             
-            
+            // Update the color scale and max values for scor_investitie
             colorScales.scor_investitie = d3.scaleSequential(d3.interpolateViridis).domain([0, scorInvestitieMax]);
             maxValues.scor_investitie = scorInvestitieMax;
             
-            
+            // Also calculate dynamic max for cheltuieli_per_capita
             const cheltuieliValues = DATA.uats
                 .map(d => d.cheltuieli_per_capita || 0)
                 .filter(v => v !== null && v !== undefined)
@@ -2372,7 +2372,7 @@
         });
     };
 
-    
+    // Show all providers in all dropdowns since category data is not available
     populate('filter-provider-tic', allProviders);
     populate('filter-provider-solutii', allProviders);
     populate('filter-provider-smart', allProviders);
@@ -2395,7 +2395,7 @@
         document.getElementById('filter-old-systems').addEventListener('change', applyFilters);
         document.getElementById('filter-transparency').addEventListener('change', applyFilters);
         
-        
+        // Provider filters are mutually exclusive
         document.getElementById('filter-provider-tic').addEventListener('change', function() {
             if (this.value !== 'all') {
                 document.getElementById('filter-provider-solutii').value = 'all';
