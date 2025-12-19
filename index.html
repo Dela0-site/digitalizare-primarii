@@ -404,6 +404,7 @@
         }
         
         .distribution-bars {
+            margin-top: 20px;
             display: flex;
             gap: 4px;
             align-items: flex-end;
@@ -1376,11 +1377,11 @@
 
             .bar-chart-title {
             font-size: 0.55rem;
-            margin-bottom: 15px; /* Increase from 4px to 15px */
+            margin-bottom: 15px; 
         }
 
         .distribution-bars {
-            height: 50px; /* Increase from 35px to 50px */
+            height: 50px; 
             gap: 3px;
         }
     
@@ -1631,11 +1632,11 @@
 
             .bar-chart-title {
         font-size: 0.5rem;
-        margin-bottom: 12px; /* Increase from 3px to 12px */
+        margin-bottom: 12px; 
     }
 
     .distribution-bars {
-        height: 45px; /* Increase from 30px to 45px */
+        height: 45px; 
         gap: 2px;
     }
 
@@ -1740,9 +1741,56 @@
                 font-size: 0.7rem;
             }
         }
+        
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            transition: opacity 0.3s ease;
+        }
+        
+        .loading-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #f0f0f0;
+            border-top: 4px solid #FBBE3B;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            font-family: 'Source Sans Pro', sans-serif;
+            font-size: 1.1rem;
+            color: #714B3A;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Se încarcă harta...</div>
+    </div>
     <div id="app-header">
         <div class="header-title-section">
             <h1>Harta Digitalizării Primăriilor</h1>
@@ -1795,7 +1843,7 @@
                 </div>
             </div>
             <div class="indicator-group">
-                <button class="indicator-btn main" data-indicator="scor_investitie">Eficiență investiție</button>
+                <button class="indicator-btn main" data-indicator="eficienta_investitie">Eficiență investiție</button>
             </div>
             <div class="indicator-legend">
                 <div class="indicator-legend-bar" id="indicator-legend-bar"></div>
@@ -2183,7 +2231,7 @@
         scor_servicii_cetateni: d3.scaleSequential(d3.interpolateViridis).domain([0, 10]),
         scor_procese_interne: d3.scaleSequential(d3.interpolateViridis).domain([0, 10]),
         scor_smart_city: d3.scaleSequential(d3.interpolateViridis).domain([0, 10]),
-        scor_investitie: d3.scaleSequential(d3.interpolateViridis).domain([0, 2]), // Will be updated dynamically
+        eficienta_investitie: d3.scaleSequential(d3.interpolateViridis).domain([0, 4]), // Will be updated dynamically
         cheltuieli_per_capita: d3.scaleSequential(d3.interpolateViridis).domain([0, 500])
     };
     
@@ -2201,7 +2249,7 @@
         scor_servicii_cetateni: 10,
         scor_procese_interne: 10,
         scor_smart_city: 10,
-        scor_investitie: 2, // Will be updated dynamically based on data
+        eficienta_investitie: 4, // Will be updated dynamically based on data
         cheltuieli_per_capita: 500 // Will be updated dynamically based on data
     };
     
@@ -2210,7 +2258,7 @@
         scor_servicii_cetateni: 'Scor servicii cetățeni',
         scor_procese_interne: 'Scor procese interne',
         scor_smart_city: 'Scor Smart City',
-        scor_investitie: 'Eficiență investiție',
+        eficienta_investitie: 'Eficiență investiție',
         cheltuieli_per_capita: 'Cheltuieli per capita'
     };
     
@@ -2286,6 +2334,14 @@
             filteredData = [...DATA.uats];
 
             
+            
+            const eficientaValues = DATA.uats
+                .map(d => d.eficienta_investitie || 0)
+                .filter(v => v !== null && v !== undefined && v < 100) // Exclude outliers at 100
+                .sort((a, b) => a - b);
+            const eficienta95Index = Math.floor(eficientaValues.length * 0.95);
+            const eficientaMax = Math.max(0.5, eficientaValues[eficienta95Index] || 0.5);
+
             categoryMaxes = {
                 scor_servicii_cetateni: 10,
                 scor_procese_interne: 10,
@@ -2294,24 +2350,23 @@
                 cost_cetateni: Math.max(...DATA.uats.map(d => d.cost_cetateni || 0)),
                 cost_interne: Math.max(...DATA.uats.map(d => d.cost_interne || 0)),
                 cost_smart_city: Math.max(...DATA.uats.map(d => d.cost_smart_city || 0)),
-                eficienta: Math.max(...DATA.uats.map(d => d.eficienta_investitie || 0))
+                eficienta: eficientaMax
             };
 
-            // Calculate dynamic max for scor_investitie based on actual data distribution
-            const scorInvestitieValues = DATA.uats
-                .map(d => d.scor_investitie || 0)
-                .filter(v => v !== null && v !== undefined)
+            
+            const eficientaInvestitieValues = DATA.uats
+                .map(d => d.eficienta_investitie || 0)
+                .filter(v => v !== null && v !== undefined && v < 50) 
                 .sort((a, b) => a - b);
             
-            // Use 95th percentile as max for better color distribution
-            const percentile95Index = Math.floor(scorInvestitieValues.length * 0.95);
-            const scorInvestitieMax = Math.max(2, Math.ceil(scorInvestitieValues[percentile95Index] || 2));
             
-            // Update the color scale and max values for scor_investitie
-            colorScales.scor_investitie = d3.scaleSequential(d3.interpolateViridis).domain([0, scorInvestitieMax]);
-            maxValues.scor_investitie = scorInvestitieMax;
+            const eficientaInvestitieMax = Math.min(4, Math.max(1, Math.ceil(eficientaInvestitieValues[eficientaInvestitieValues.length - 1] || 4)));
             
-            // Also calculate dynamic max for cheltuieli_per_capita
+            
+            colorScales.eficienta_investitie = d3.scaleSequential(d3.interpolateViridis).domain([0, eficientaInvestitieMax]);
+            maxValues.eficienta_investitie = eficientaInvestitieMax;
+            
+            
             const cheltuieliValues = DATA.uats
                 .map(d => d.cheltuieli_per_capita || 0)
                 .filter(v => v !== null && v !== undefined)
@@ -2330,9 +2385,14 @@
             
             drawMap();
             updateLegend();
+            
+            
+            document.getElementById('loading-overlay').classList.add('hidden');
 
         } catch (error) {
             console.error("Error loading data:", error);
+            
+            document.getElementById('loading-overlay').classList.add('hidden');
             document.getElementById('map-container').innerHTML = `
                 <div style="display:flex; justify-content:center; align-items:center; height:100%; flex-direction:column; text-align:center; padding:20px;">
                     <i class="fas fa-exclamation-triangle" style="font-size:3rem; color:#dc3545; margin-bottom:15px;"></i>
@@ -2380,14 +2440,14 @@
             .sort((a, b) => b.count - a.count);
     };
 
-    // Use category-specific provider lists
+    
     const ticProviders = getSortedProviders(DATA.furnizori_tic);
     const solutiiProviders = getSortedProviders(DATA.furnizori_solutii);
     const smartProviders = getSortedProviders(DATA.furnizori_smart);
     
     const populate = (selectId, providers) => {
         const select = document.getElementById(selectId);
-        // Clear existing except first
+        
         while (select.options.length > 1) select.remove(1);
         
         providers.slice(0, 100).forEach(p => {
@@ -2398,7 +2458,7 @@
         });
     };
 
-    // Populate each dropdown with only providers from that category
+    
     populate('filter-provider-tic', ticProviders);
     populate('filter-provider-solutii', solutiiProviders);
     populate('filter-provider-smart', smartProviders);
@@ -2691,7 +2751,7 @@
         
         let valueDisplay = (indicatorValue === null) ? 'N/A' : indicatorValue.toFixed(2);
 
-        if (currentIndicator === 'cheltuieli_per_capita' || currentIndicator === 'scor_investitie') {
+        if (currentIndicator === 'cheltuieli_per_capita' || currentIndicator === 'eficienta_investitie') {
             details += `<div class="detail"><strong>${indicatorLabel}:</strong> ${valueDisplay}</div>`;
         } else {
             details += `<div class="detail"><strong>${indicatorLabel}:</strong> ${valueDisplay} / ${maxVal}</div>`;
