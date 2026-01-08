@@ -631,6 +631,11 @@
             color: #FF9800;
         }
         
+        .status-badge.neutral {
+            background: rgba(153, 153, 153, 0.15);
+            color: #999;
+        }
+        
         .panel-hint {
             font-size: 0.8rem;
             color: #999;
@@ -2012,7 +2017,7 @@
     <div id="student-modal" class="modal">
         <div class="modal-content">
             <span class="close-modal" onclick="closeStudentModal()">&times;</span>
-            <h3>Colectiv studenți</h3>
+        <h3>Colectiv studenți</h3>
             <ul class="student-list" id="student-list">
                 <!-- List items here -->
             </ul>
@@ -2424,7 +2429,7 @@
     
     function updateHeaderStats() {
         
-        document.getElementById('stat-total-uats').textContent = "297";
+        document.getElementById('stat-total-uats').textContent = "298";
         document.getElementById('stat-avg-score').textContent = DATA.stats.avg_scor_digitalizare.toFixed(2);
         
         const totalCheltuieli = DATA.uats.reduce((sum, u) => sum + (u.cheltuieli_total || 0), 0);
@@ -2575,8 +2580,8 @@
                 const regionMap = {
                     'Nord-Est': 'Nord-Est',
                     'Sud-Est': 'Sud-Est', 
-                    'Sud': 'Sud-Muntenia',
-                    'Sud-Muntenia': 'Sud-Muntenia',
+                    'Sud': 'Sud',
+                    'Sud-Muntenia': 'Sud',
                     'Sud-Vest': 'Sud-Vest',
                     'Vest': 'Vest',
                     'Nord-Vest': 'Nord-Vest',
@@ -2871,12 +2876,14 @@
         
         const displayUatName = d.name === 'Cluj Napoca' ? 'Cluj-Napoca' : d.name;
 
-        const strategyBadge = {
-            'da_strategie': '<span class="status-badge positive"><i class="fas fa-check"></i> Strategie adoptată</span>',
-            'capitol_in_strategie': '<span class="status-badge warning"><i class="fas fa-minus"></i> Capitol în strategie</span>',
-            'nu_are': '<span class="status-badge negative"><i class="fas fa-times"></i> Fără strategie</span>',
-            'necunoscut': '<span class="status-badge negative">Necunoscut</span>'
-        }[d.strategie] || '';
+        const strategyBadge = isNoResponse ? 
+            '<span class="status-badge neutral"><i class="fas fa-question-circle"></i> N/A</span>' :
+            {
+                'da_strategie': '<span class="status-badge positive"><i class="fas fa-check"></i> Strategie adoptată</span>',
+                'capitol_in_strategie': '<span class="status-badge warning"><i class="fas fa-minus"></i> Capitol în strategie</span>',
+                'nu_are': '<span class="status-badge negative"><i class="fas fa-times"></i> Fără strategie</span>',
+                'necunoscut': '<span class="status-badge negative">Necunoscut</span>'
+            }[d.strategie] || '';
         
         const transparencyBadge = {
             'complet': '<span class="status-badge positive"><i class="fas fa-check"></i> Răspuns complet</span>',
@@ -2962,15 +2969,19 @@
             
             <div class="section-title">Infrastructură</div>
             <div style="margin-bottom: 8px;">
-                ${d.sisteme_vechi ? 
-                    `<span class="status-badge negative"><i class="fas fa-desktop"></i> Sisteme vechi${d.sisteme_vechi_count ? ` (${d.sisteme_vechi_count})` : ''}</span>` : 
-                    '<span class="status-badge positive"><i class="fas fa-desktop"></i> Fără sisteme vechi</span>'}
+                ${isNoResponse ?
+                    '<span class="status-badge neutral"><i class="fas fa-desktop"></i> N/A</span>' :
+                    (d.sisteme_vechi ? 
+                        `<span class="status-badge negative"><i class="fas fa-desktop"></i> Sisteme vechi${d.sisteme_vechi_count ? ` (${d.sisteme_vechi_count})` : ''}</span>` : 
+                        '<span class="status-badge positive"><i class="fas fa-desktop"></i> Fără sisteme vechi</span>')}
             </div>
-            <div class="info-text">${getInfoSistemeVechi(d.sisteme_vechi, d.sisteme_vechi_count)}</div>
+            <div class="info-text">${isNoResponse ? 'Nu a răspuns la chestionar.' : getInfoSistemeVechi(d.sisteme_vechi, d.sisteme_vechi_count)}</div>
             <div style="margin-bottom: 8px;">
-                ${d.personal_instruit ? 
-                    '<span class="status-badge positive"><i class="fas fa-graduation-cap"></i> Personal instruit</span>' : 
-                    '<span class="status-badge warning"><i class="fas fa-graduation-cap"></i> Personal neinstruit</span>'}
+                ${isNoResponse ?
+                    '<span class="status-badge neutral"><i class="fas fa-graduation-cap"></i> N/A</span>' :
+                    (d.personal_instruit ? 
+                        '<span class="status-badge positive"><i class="fas fa-graduation-cap"></i> Personal instruit</span>' : 
+                        '<span class="status-badge warning"><i class="fas fa-graduation-cap"></i> Personal neinstruit</span>')}
             </div>
             
             <div class="section-title">TRANSPARENȚĂ LEGEA 544/2001</div>
