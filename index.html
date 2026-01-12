@@ -1860,6 +1860,10 @@
                     <div style="width: 8px; height: 8px; background-color: #dc3545; border-radius: 50%;"></div>
                     <span>Nu a răspuns</span>
                 </div>
+                <div class="indicator-legend-no-response">
+                    <div style="width: 8px; height: 8px; background-color: #666; border-radius: 50%;"></div>
+                    <span>Scor incalculabil</span>
+                </div>
             </div>
         </div>
     </div>
@@ -2713,7 +2717,7 @@
                     return '#dc3545';
                 }
                 if (d[currentIndicator] === null) {
-                    return '#ccc';
+                    return '#666';
                 }
                 return colorScale(d[currentIndicator]);
             })
@@ -2774,7 +2778,7 @@
         
         const oldSystemsFilter = document.getElementById('filter-old-systems').value;
         if (oldSystemsFilter !== 'all') {
-            details += `<div class="detail">${d.sisteme_vechi ? '⚠ Sisteme vechi: ' + (d.sisteme_vechi_count || 'Da') : '✓ Fără sisteme vechi'}</div>`;
+            details += `<div class="detail">${d.sisteme_vechi === null ? '? Nu a răspuns' : (d.sisteme_vechi ? '⚠ Sisteme vechi: ' + (d.sisteme_vechi_count || 'Da') : '✓ Fără sisteme vechi')}</div>`;
         }
         
         const transparencyFilter = document.getElementById('filter-transparency').value;
@@ -2872,18 +2876,20 @@
     function updatePanel(d) {
         const container = document.getElementById('panel-content');
         const isNoResponse = d.transparenta === 'nu_au_raspuns' || d.transparenta === 'nu_raspuns';
-        const scoreColor = isNoResponse ? '#999' : getScoreColor(d.scor_digitalizare);
+        const isIncomplete = !isNoResponse && d.scor_digitalizare === null;
+        const scoreColor = isNoResponse ? '#dc3545' : (isIncomplete ? '#666' : getScoreColor(d.scor_digitalizare));
         
         const displayUatName = d.name === 'Cluj Napoca' ? 'Cluj-Napoca' : d.name;
 
         const strategyBadge = isNoResponse ? 
             '<span class="status-badge neutral"><i class="fas fa-question-circle"></i> N/A</span>' :
+            (d.strategie === null ? '<span class="status-badge neutral"><i class="fas fa-question-circle"></i> Nu a răspuns</span>' :
             {
                 'da_strategie': '<span class="status-badge positive"><i class="fas fa-check"></i> Strategie adoptată</span>',
                 'capitol_in_strategie': '<span class="status-badge warning"><i class="fas fa-minus"></i> Capitol în strategie</span>',
                 'nu_are': '<span class="status-badge negative"><i class="fas fa-times"></i> Fără strategie</span>',
                 'necunoscut': '<span class="status-badge negative">Necunoscut</span>'
-            }[d.strategie] || '';
+            }[d.strategie] || '');
         
         const transparencyBadge = {
             'complet': '<span class="status-badge positive"><i class="fas fa-check"></i> Răspuns complet</span>',
@@ -2901,8 +2907,8 @@
             <span class="region-tag">${d.judet}, ${d.regiune}</span>
             
             <div class="big-stat">
-                <div class="big-number" style="color: ${scoreColor}">${(isNoResponse || d.scor_digitalizare === null) ? 'N/A' : d.scor_digitalizare.toFixed(2)}</div>
-                <div class="big-label">Scor digitalizare (din 10)</div>
+                <div class="big-number" style="color: ${scoreColor}">${isNoResponse ? 'N/A' : (isIncomplete ? 'N/A' : d.scor_digitalizare.toFixed(2))}</div>
+                <div class="big-label">Scor digitalizare (din 10)${isIncomplete ? ' - răspuns incomplet' : ''}</div>
             </div>
             
             <div class="site-year-info ${!d.an_site || d.an_site === 'nan' ? 'no-data' : ''}">
@@ -2914,12 +2920,12 @@
             </div>
             
             <div class="section-title">Scoruri componente</div>
-            ${makeBar('Aplicații pentru cetățeni', d.scor_servicii_cetateni, categoryMaxes.scor_servicii_cetateni, null, true, false, isNoResponse)}
-            <div class="info-text">${isNoResponse ? 'Nu a răspuns la chestionar.' : getInfoCetateni(d.scor_servicii_cetateni)}</div>
-            ${makeBar('Aplicații pentru funcționari', d.scor_procese_interne, categoryMaxes.scor_procese_interne, null, true, false, isNoResponse)}
-            <div class="info-text">${isNoResponse ? 'Nu a răspuns la chestionar.' : getInfoFunctionari(d.scor_procese_interne)}</div>
-            ${makeBar('Soluții Smart City', d.scor_smart_city, categoryMaxes.scor_smart_city, null, true, false, isNoResponse)}
-            <div class="info-text">${isNoResponse ? 'Nu a răspuns la chestionar.' : getInfoSmartCity(d.scor_smart_city)}</div>
+            ${makeBar('Aplicații pentru cetățeni', d.scor_servicii_cetateni, categoryMaxes.scor_servicii_cetateni, null, true, false, isNoResponse || d.scor_servicii_cetateni === null)}
+            <div class="info-text">${(isNoResponse || d.scor_servicii_cetateni === null) ? 'Nu a răspuns la chestionar.' : getInfoCetateni(d.scor_servicii_cetateni)}</div>
+            ${makeBar('Aplicații pentru funcționari', d.scor_procese_interne, categoryMaxes.scor_procese_interne, null, true, false, isNoResponse || d.scor_procese_interne === null)}
+            <div class="info-text">${(isNoResponse || d.scor_procese_interne === null) ? 'Nu a răspuns la chestionar.' : getInfoFunctionari(d.scor_procese_interne)}</div>
+            ${makeBar('Soluții Smart City', d.scor_smart_city, categoryMaxes.scor_smart_city, null, true, false, isNoResponse || d.scor_smart_city === null)}
+            <div class="info-text">${(isNoResponse || d.scor_smart_city === null) ? 'Nu a răspuns la chestionar.' : getInfoSmartCity(d.scor_smart_city)}</div>
             
             <div class="section-title">Informații generale</div>
             <div class="stat-grid">
@@ -2942,26 +2948,26 @@
             </div>
             
             <div class="section-title">Cheltuieli 2020-2025</div>
-            <div class="info-text">Include, achiziții TIC, soluții digitale, pagină web și mentenanță.</div>
+            <div class="info-text">Include achiziții TIC, soluții digitale, pagină web și mentenanță.</div>
             <div class="stat-grid">
                 <div class="stat-item">
-                    <div class="value${isNoResponse ? ' no-response' : ''}">${isNoResponse ? 'Nu a răspuns' : formatCurrency(d.cheltuieli_total || 0)}</div>
+                    <div class="value${(isNoResponse || d.cheltuieli_total === null) ? ' no-response' : ''}">${(isNoResponse || d.cheltuieli_total === null) ? 'Nu a răspuns' : formatCurrency(d.cheltuieli_total || 0)}</div>
                     <div class="label">Total</div>
                 </div>
                 <div class="stat-item">
-                    <div class="value${isNoResponse ? ' no-response' : ''}">${isNoResponse ? 'Nu a răspuns' : formatCurrency(d.cheltuieli_per_capita || 0)}</div>
+                    <div class="value${(isNoResponse || d.cheltuieli_per_capita === null) ? ' no-response' : ''}">${(isNoResponse || d.cheltuieli_per_capita === null) ? 'Nu a răspuns' : formatCurrency(d.cheltuieli_per_capita || 0)}</div>
                     <div class="label">Per capita</div>
                 </div>
             </div>
             <div class="section-title">Cheltuieli Digitalizare</div>
-            ${makeBar('Echipamente TIC', d.cost_tic, categoryMaxes.cost_tic, null, true, true, isNoResponse)}
-            ${makeBar('Aplicații pentru cetățeni', d.cost_cetateni, categoryMaxes.cost_cetateni, null, true, true, isNoResponse)}
-            ${makeBar('Aplicații pentru funcționari', d.cost_interne, categoryMaxes.cost_interne, null, true, true, isNoResponse)}
-            ${makeBar('Soluții Smart City', d.cost_smart_city, categoryMaxes.cost_smart_city, null, true, true, isNoResponse)}
+            ${makeBar('Echipamente TIC', d.cost_tic, categoryMaxes.cost_tic, null, true, true, isNoResponse || d.cost_tic === null)}
+            ${makeBar('Aplicații pentru cetățeni', d.cost_cetateni, categoryMaxes.cost_cetateni, null, true, true, isNoResponse || d.cost_cetateni === null)}
+            ${makeBar('Aplicații pentru funcționari', d.cost_interne, categoryMaxes.cost_interne, null, true, true, isNoResponse || d.cost_interne === null)}
+            ${makeBar('Soluții Smart City', d.cost_smart_city, categoryMaxes.cost_smart_city, null, true, true, isNoResponse || d.cost_smart_city === null)}
             
             <div class="section-title">Eficiență investiție</div>
             <p class="efficiency-explanation">Puncte de digitalizare obținute per 100 lei investiți per capita. Valori mai mari indică eficiență mai bună.</p>
-            ${makeBar('Scor eficiență', eficientaScore, categoryMaxes.eficienta, null, true, false, isNoResponse)}
+            ${makeBar('Scor eficiență', eficientaScore, categoryMaxes.eficienta, null, true, false, isNoResponse || d.eficienta_investitie === null)}
             
             <div class="section-title">Strategie digitalizare</div>
             <div style="margin-bottom: 8px;">${strategyBadge}</div>
@@ -2971,17 +2977,21 @@
             <div style="margin-bottom: 8px;">
                 ${isNoResponse ?
                     '<span class="status-badge neutral"><i class="fas fa-desktop"></i> N/A</span>' :
-                    (d.sisteme_vechi ? 
-                        `<span class="status-badge negative"><i class="fas fa-desktop"></i> Sisteme vechi${d.sisteme_vechi_count ? ` (${d.sisteme_vechi_count})` : ''}</span>` : 
-                        '<span class="status-badge positive"><i class="fas fa-desktop"></i> Fără sisteme vechi</span>')}
+                    (d.sisteme_vechi === null ?
+                        '<span class="status-badge neutral"><i class="fas fa-desktop"></i> Nu a răspuns</span>' :
+                        (d.sisteme_vechi ? 
+                            `<span class="status-badge negative"><i class="fas fa-desktop"></i> Sisteme vechi${d.sisteme_vechi_count ? ` (${d.sisteme_vechi_count})` : ''}</span>` : 
+                            '<span class="status-badge positive"><i class="fas fa-desktop"></i> Fără sisteme vechi</span>'))}
             </div>
-            <div class="info-text">${isNoResponse ? 'Nu a răspuns la chestionar.' : getInfoSistemeVechi(d.sisteme_vechi, d.sisteme_vechi_count)}</div>
+            <div class="info-text">${(isNoResponse || d.sisteme_vechi === null) ? 'Nu a răspuns la chestionar.' : getInfoSistemeVechi(d.sisteme_vechi, d.sisteme_vechi_count)}</div>
             <div style="margin-bottom: 8px;">
                 ${isNoResponse ?
                     '<span class="status-badge neutral"><i class="fas fa-graduation-cap"></i> N/A</span>' :
-                    (d.personal_instruit ? 
-                        '<span class="status-badge positive"><i class="fas fa-graduation-cap"></i> Personal instruit</span>' : 
-                        '<span class="status-badge warning"><i class="fas fa-graduation-cap"></i> Personal neinstruit</span>')}
+                    (d.personal_instruit === null ?
+                        '<span class="status-badge neutral"><i class="fas fa-graduation-cap"></i> Nu a răspuns</span>' :
+                        (d.personal_instruit ? 
+                            '<span class="status-badge positive"><i class="fas fa-graduation-cap"></i> Personal instruit</span>' : 
+                            '<span class="status-badge warning"><i class="fas fa-graduation-cap"></i> Personal neinstruit</span>'))}
             </div>
             
             <div class="section-title">TRANSPARENȚĂ LEGEA 544/2001</div>
@@ -2992,8 +3002,8 @@
             ${d.has_pdf ? 
                 `<a href="raspunsuri/${d.pdf_filename || ('Primăria ' + d.name + '.pdf')}" target="_blank" class="download-btn">
                     <i class="fas fa-file-pdf"></i> Descarcă răspunsul
-                </a>` : 
-                (d.text_544 ? `
+                </a>` : ''}
+            ${d.text_544 ? `
                 <div class="toggle-544">
                     <button class="toggle-544-btn" onclick="this.classList.toggle('active'); this.nextElementSibling.classList.toggle('show');">
                         <span><i class="fas fa-info-circle"></i> Vezi explicația</span>
@@ -3002,7 +3012,7 @@
                     <div class="toggle-544-content">
                         <div class="toggle-544-text">${d.text_544.replace(/\\n/g, '<br>')}</div>
                     </div>
-                </div>` : '')}
+                </div>` : ''}
         `;
     }
     
@@ -3081,7 +3091,8 @@
                 barDiv.className = 'dist-bar';
                 
                 const height = maxCount > 0 ? (count / maxCount) * 35 : 0;
-                const color = colorScale((i + 0.5) * binSize);
+                // Use max value color for the last bin to match map colors (yellow for highest)
+                const color = (i === bins - 1) ? colorScale(max) : colorScale((i + 0.5) * binSize);
                 
                 barDiv.innerHTML = `
                     <div class="dist-bar-value">${count}</div>
