@@ -1809,12 +1809,18 @@
                     <i class="fas fa-info-circle"></i>
                 </button>
                 <div class="info-tooltip" id="info-primarii">
-                    În România sunt 325 de primării de orașe și municipii, plus primăriile de Sector din București. Dintre acestea 28 nu au răspuns solicitării de presă trimise în baza legii care garantează accesul la informații publice.
+                    În România sunt 325 de primării de orașe și municipii, plus primăriile de sector din București. Dintre acestea 26 nu au răspuns solicitării de presă trimise în baza legii care garantează accesul la informații publice.
                 </div>
             </div>
             <div class="header-stat">
                 <div class="value" id="stat-avg-score">--</div>
                 <div class="label">Scor mediu</div>
+                <button class="info-btn" onclick="toggleInfoTooltip('info-scor-mediu')">
+                    <i class="fas fa-info-circle"></i>
+                </button>
+                <div class="info-tooltip" id="info-scor-mediu">
+                    Acest scor măsoară performanța a 286 de primării de orașe și municipii. Alte 13 primării au oferit răspunsuri incomplete care nu au permis calcularea scorului digital conform metodologiei.
+                </div>
             </div>
             <div class="header-stat">
                 <div class="value" id="stat-total-spend">--</div>
@@ -2160,17 +2166,17 @@
     function selectSearchResult(cityName) {
         const city = DATA.uats.find(u => u.name === cityName);
         if (city) {
-            // Reset region filter to show all
+            
             document.getElementById('filter-region').value = 'all';
             applyFilters();
             
-            // Select the UAT
+            
             selectedUAT = city.name;
             updateCircles();
             updatePanel(city);
             showPanel();
             
-            // Zoom to the city
+            
             if (city.lat && city.lng) {
                 const [x, y] = projection([city.lng, city.lat]);
                 svgMap.transition().duration(750).call(
@@ -2193,7 +2199,7 @@
         if (event.target == methodologyModal) {
             methodologyModal.style.display = "none";
         }
-        // Close search if clicking outside
+        
         if (!event.target.closest('#search-container')) {
             const results = document.getElementById('search-results');
             if (results) results.classList.remove('active');
@@ -2240,7 +2246,7 @@
         scor_servicii_cetateni: d3.scaleSequential(d3.interpolateViridis).domain([0, 10]),
         scor_procese_interne: d3.scaleSequential(d3.interpolateViridis).domain([0, 10]),
         scor_smart_city: d3.scaleSequential(d3.interpolateViridis).domain([0, 10]),
-        eficienta_investitie: d3.scaleSequential(d3.interpolateViridis).domain([0, 4]), // Will be updated dynamically
+        eficienta_investitie: d3.scaleSequential(d3.interpolateViridis).domain([0, 4]), 
         cheltuieli_per_capita: d3.scaleSequential(d3.interpolateViridis).domain([0, 500])
     };
     
@@ -2258,8 +2264,8 @@
         scor_servicii_cetateni: 10,
         scor_procese_interne: 10,
         scor_smart_city: 10,
-        eficienta_investitie: 4, // Will be updated dynamically based on data
-        cheltuieli_per_capita: 500 // Will be updated dynamically based on data
+        eficienta_investitie: 4, 
+        cheltuieli_per_capita: 500 
     };
     
     const indicatorLabels = {
@@ -2346,7 +2352,7 @@
             
             const eficientaValues = DATA.uats
                 .map(d => d.eficienta_investitie || 0)
-                .filter(v => v !== null && v !== undefined && v < 100) // Exclude outliers at 100
+                .filter(v => v !== null && v !== undefined && v < 100) 
                 .sort((a, b) => a - b);
             const eficienta95Index = Math.floor(eficientaValues.length * 0.95);
             const eficientaMax = Math.max(0.5, eficientaValues[eficienta95Index] || 0.5);
@@ -2490,7 +2496,7 @@
         document.getElementById('filter-old-systems').addEventListener('change', applyFilters);
         document.getElementById('filter-transparency').addEventListener('change', applyFilters);
         
-        // Provider filters are mutually exclusive
+        
         document.getElementById('filter-provider-tic').addEventListener('change', function() {
             if (this.value !== 'all') {
                 document.getElementById('filter-provider-solutii').value = 'all';
@@ -3091,7 +3097,7 @@
                 barDiv.className = 'dist-bar';
                 
                 const height = maxCount > 0 ? (count / maxCount) * 35 : 0;
-                // Use max value color for the last bin to match map colors (yellow for highest)
+                
                 const color = (i === bins - 1) ? colorScale(max) : colorScale((i + 0.5) * binSize);
                 
                 barDiv.innerHTML = `
