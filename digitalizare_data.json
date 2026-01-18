@@ -196,7 +196,10 @@
         "SOBIS SOLUTIONS"
       ],
       "furnizori_tic": [],
-      "furnizori_solutii": [],
+      "furnizori_solutii": [
+        "SOBIS AP",
+        "NETGLOB"
+      ],
       "furnizori_smart": []
     },
     {
@@ -377,7 +380,12 @@
         "COPY PREX",
         "ROMOFFICE"
       ],
-      "furnizori_solutii": [],
+      "furnizori_solutii": [
+        "REGISTA DIGITAL",
+        "ADI COM SOFT",
+        "CTCE Piatra Neamț",
+        "REGISTA"
+      ],
       "furnizori_smart": []
     },
     {
@@ -666,7 +674,9 @@
         "IMP EXPERT BUSINESS",
         "BLUPIXEL SYSTEMS"
       ],
-      "furnizori_solutii": [],
+      "furnizori_solutii": [
+        "SDG SKILLED PROGRAMS"
+      ],
       "furnizori_smart": []
     },
     {
@@ -711,7 +721,10 @@
         "MITALIS OFFICE",
         "ERACONSULT"
       ],
-      "furnizori_solutii": [],
+      "furnizori_solutii": [
+        "REGISTA DIGITAL",
+        "GAMISOFT"
+      ],
       "furnizori_smart": []
     },
     {
@@ -806,7 +819,12 @@
         "ALTEX",
         "ACTIVE TECH SUSTEMS"
       ],
-      "furnizori_solutii": [],
+      "furnizori_solutii": [
+        "GEODATA SERVICES",
+        "TDL Soft",
+        "Big Media Relații Publice",
+        "Integrisoft Solutions"
+      ],
       "furnizori_smart": []
     },
     {
@@ -849,7 +867,9 @@
         "DANTE INTERNATIONAL",
         "DENDRO TECHNOLOGY"
       ],
-      "furnizori_solutii": [],
+      "furnizori_solutii": [
+        "TNT COMPUTERS"
+      ],
       "furnizori_smart": []
     },
     {
@@ -939,7 +959,10 @@
         "ORANGE",
         "GLOBAL NET"
       ],
-      "furnizori_solutii": [],
+      "furnizori_solutii": [
+        "Solutions Development Group",
+        "REGISTA DIGITAL"
+      ],
       "furnizori_smart": []
     },
     {
@@ -981,7 +1004,9 @@
       "furnizori_tic": [
         "SHAROLT GROUP"
       ],
-      "furnizori_solutii": [],
+      "furnizori_solutii": [
+        "SOBIS AP"
+      ],
       "furnizori_smart": []
     },
     {
@@ -1075,8 +1100,14 @@
         "NCT BELARN INTERNATIONAL",
         "HIDAGO"
       ],
-      "furnizori_solutii": [],
-      "furnizori_smart": []
+      "furnizori_solutii": [
+        "SOBIS AP",
+        "ADI COM SOFT",
+        "SOBIS SOLUTIONS"
+      ],
+      "furnizori_smart": [
+        "Serviciul Iluminat Public UAT Moldova Nouă"
+      ]
     },
     {
       "name": "Miercurea Nirajului",
@@ -1116,7 +1147,9 @@
       "furnizori_tic": [
         "TOTH ALL ELECTRONICS"
       ],
-      "furnizori_solutii": [],
+      "furnizori_solutii": [
+        "Integrisoft Solutions"
+      ],
       "furnizori_smart": []
     },
     {
@@ -1199,7 +1232,10 @@
         "SYNTEQ SOLUTIONS"
       ],
       "furnizori_tic": [],
-      "furnizori_solutii": [],
+      "furnizori_solutii": [
+        "SYNTEQ SOLUTIONS",
+        "Integrisoft Solutions"
+      ],
       "furnizori_smart": []
     },
     {
@@ -1286,7 +1322,12 @@
       "furnizori_tic": [
         "TRIDENT SERVICE"
       ],
-      "furnizori_solutii": [],
+      "furnizori_solutii": [
+        "HARD SERVICE",
+        "INFOSOFT SOLUTIONS&AUDIT",
+        "SOCIAL MANAGEMENT",
+        "INTELI MANAGEMENT SYSTEMS"
+      ],
       "furnizori_smart": []
     },
     {
@@ -1328,7 +1369,10 @@
       "furnizori_tic": [
         "DAMIART ADVERTISING"
       ],
-      "furnizori_solutii": [],
+      "furnizori_solutii": [
+        "ProiecteSoft.Net",
+        "SOFTWARE DISTRIBUTION GROUP"
+      ],
       "furnizori_smart": []
     },
     {
@@ -1412,7 +1456,12 @@
         "TOP TECH"
       ],
       "furnizori_tic": [],
-      "furnizori_solutii": [],
+      "furnizori_solutii": [
+        "Mindsoft IT Solutions",
+        "PUBLICSOFT CONSTRUCTOR",
+        "TOP TECH",
+        "TNIT COMPUTERS"
+      ],
       "furnizori_smart": [
         "SBUILT CONS"
       ]
@@ -1458,7 +1507,9 @@
         "DANTE INTERNATIONAL",
         "AMY"
       ],
-      "furnizori_solutii": [],
+      "furnizori_solutii": [
+        "SOFT DEVICE GROUP"
+      ],
       "furnizori_smart": []
     },
     {
@@ -1499,7 +1550,9 @@
       "furnizori_tic": [
         "LUCADAMI SYSTEMS"
       ],
-      "furnizori_solutii": [],
+      "furnizori_solutii": [
+        "Direcția Generală de Evideță a Populației și Administrarea Bazelor de Date"
+      ],
       "furnizori_smart": []
     },
     {
@@ -1637,7 +1690,11 @@
       "furnizori_tic": [
         "PRINTECH COMPANY"
       ],
-      "furnizori_solutii": [],
+      "furnizori_solutii": [
+        "TGP PROJECT",
+        "TCP PROJECT",
+        "CENTRUL DE CALCUL"
+      ],
       "furnizori_smart": [
         "ANADOLU AUTOMOBIL ROM"
       ]
@@ -1808,7 +1865,9 @@
         "DANTE INTERNATIONAL",
         "EVOLUTION PREST SYSTEMS"
       ],
-      "furnizori_solutii": [],
+      "furnizori_solutii": [
+        "Integrisoft Solutions"
+      ],
       "furnizori_smart": []
     },
     {
@@ -1854,7 +1913,9 @@
         "DANTE INTERNATIONAL",
         "PMC GRUP DISTRIBUTIE"
       ],
-      "furnizori_solutii": [],
+      "furnizori_solutii": [
+        "SOLUTIONS DEVELOPMENT GROUP"
+      ],
       "furnizori_smart": [
         "SMART BUSINESS & TECHNOLOGIES SOLUTIONS",
         "METALGAN COMPANY"
@@ -1903,7 +1964,9 @@
         "ROMEXPRES",
         "SDG TECHNOLOGY"
       ],
-      "furnizori_solutii": [],
+      "furnizori_solutii": [
+        "SPECTRUM DISTRIBUTIN GROUP"
+      ],
       "furnizori_smart": []
     },
     {
@@ -1945,7 +2008,9 @@
       "furnizori_tic": [
         "TANDEM"
       ],
-      "furnizori_solutii": [],
+      "furnizori_solutii": [
+        "INDECO SOFT"
+      ],
       "furnizori_smart": []
     },
     {
@@ -1986,7 +2051,9 @@
       "furnizori_tic": [
         "PROSOFT ++"
       ],
-      "furnizori_solutii": [],
+      "furnizori_solutii": [
+        "PROSOFT ++"
+      ],
       "furnizori_smart": []
     },
     {
@@ -2170,7 +2237,9 @@
         "FANPLACE IT",
         "CUBIX IT"
       ],
-      "furnizori_solutii": [],
+      "furnizori_solutii": [
+        "Big Media Relaţii Publice"
+      ],
       "furnizori_smart": []
     },
     {
@@ -2212,7 +2281,10 @@
       "furnizori_tic": [
         "CAZNET COMMUNICATIONS"
       ],
-      "furnizori_solutii": [],
+      "furnizori_solutii": [
+        "Big Media Relații Publice",
+        "ADI COM SOFT"
+      ],
       "furnizori_smart": []
     },
     {
@@ -2300,7 +2372,9 @@
       "furnizori_tic": [
         "CUBIX IT"
       ],
-      "furnizori_solutii": [],
+      "furnizori_solutii": [
+        "GRUP SOFT"
+      ],
       "furnizori_smart": []
     },
     {
@@ -2347,7 +2421,12 @@
         "DANTE INTERNATIONAL",
         "COPIATOARE"
       ],
-      "furnizori_solutii": [],
+      "furnizori_solutii": [
+        "REGISTA DIGITAL",
+        "ADI COM SOFT",
+        "CTCE Piatra Neamț",
+        "Integrisoft Solutions"
+      ],
       "furnizori_smart": []
     },
     {
@@ -2486,7 +2565,11 @@
         "STAR COMPUTER",
         "CRIS PROVISION"
       ],
-      "furnizori_solutii": [],
+      "furnizori_solutii": [
+        "C&M SOLUTION",
+        "ADI COM SOFT",
+        "CTCE Piatra Neamț"
+      ],
       "furnizori_smart": [
         "E.O.N ENERGIE ROMÂNIA"
       ]
@@ -2530,7 +2613,9 @@
       "furnizori_tic": [
         "BALANEANU CONSULT"
       ],
-      "furnizori_solutii": [],
+      "furnizori_solutii": [
+        "SOBIS SOLUTIONS"
+      ],
       "furnizori_smart": [
         "ITCONSTRUCTION"
       ]
@@ -2577,7 +2662,11 @@
         "HILF TRADE",
         "GIMSOFT SERVICE"
       ],
-      "furnizori_solutii": [],
+      "furnizori_solutii": [
+        "HILF TRADE",
+        "PRIMA SOFT",
+        "ADI COM SOFT"
+      ],
       "furnizori_smart": []
     },
     {
@@ -2666,7 +2755,9 @@
         "DAKOMA INVEST",
         "COMPUTECH"
       ],
-      "furnizori_solutii": [],
+      "furnizori_solutii": [
+        "CENTRUL DE CALCUL"
+      ],
       "furnizori_smart": []
     },
     {
@@ -2793,7 +2884,9 @@
         "DANTE INTERNATIONAL",
         "RO ET CO INTERNATIONAL"
       ],
-      "furnizori_solutii": [],
+      "furnizori_solutii": [
+        "INDECO SOFT"
+      ],
       "furnizori_smart": []
     },
     {
@@ -2878,7 +2971,13 @@
         "PRIMA SOFT"
       ],
       "furnizori_tic": [],
-      "furnizori_solutii": [],
+      "furnizori_solutii": [
+        "FIELD SOFT",
+        "ADI COM SOFT",
+        "INDECO SOFT",
+        "COMPANIA INFORMATICĂ NEAMȚ",
+        "PRIMA SOFT"
+      ],
       "furnizori_smart": []
     },
     {
@@ -3052,7 +3151,9 @@
         "SDG SKILLED PROGRAMS"
       ],
       "furnizori_tic": [],
-      "furnizori_solutii": [],
+      "furnizori_solutii": [
+        "SDG SKILLED PROGRAMS"
+      ],
       "furnizori_smart": []
     },
     {
@@ -3095,7 +3196,9 @@
         "DANTE INTERNATIONAL",
         "DOCSMART"
       ],
-      "furnizori_solutii": [],
+      "furnizori_solutii": [
+        "Integrisoft Solutions"
+      ],
       "furnizori_smart": []
     },
     {
@@ -3138,7 +3241,10 @@
       "furnizori_tic": [
         "GIMAR"
       ],
-      "furnizori_solutii": [],
+      "furnizori_solutii": [
+        "SOBIS SOLUTIONS",
+        "CENTRUL DE CALCUL"
+      ],
       "furnizori_smart": []
     },
     {
@@ -3181,7 +3287,10 @@
       "furnizori_tic": [
         "DANTE INTERNATIONAL"
       ],
-      "furnizori_solutii": [],
+      "furnizori_solutii": [
+        "ADI COM SOFT",
+        "Integrisoft Solutions"
+      ],
       "furnizori_smart": []
     },
     {
@@ -3223,7 +3332,12 @@
         "REGISTA DIGITAL"
       ],
       "furnizori_tic": [],
-      "furnizori_solutii": [],
+      "furnizori_solutii": [
+        "REGISTA DIGITAL",
+        "PRIMERA TECH NET",
+        "ADI COM SOFT",
+        "ADMINCONSULT NORD"
+      ],
       "furnizori_smart": []
     },
     {
@@ -3338,7 +3452,10 @@
       "furnizori_tic": [
         "LIGHT SPEED COMPUTERS"
       ],
-      "furnizori_solutii": [],
+      "furnizori_solutii": [
+        "HARRISON CONSULTING",
+        "INDECO SOFT"
+      ],
       "furnizori_smart": []
     },
     {
@@ -3380,7 +3497,9 @@
       "furnizori_tic": [
         "AS COMPUTER CRAIOVA"
       ],
-      "furnizori_solutii": [],
+      "furnizori_solutii": [
+        "ADVANCED TECHNOLOGY SYSTEM"
+      ],
       "furnizori_smart": []
     },
     {
@@ -3423,7 +3542,9 @@
       "furnizori_tic": [
         "COMPUTER TRADE"
       ],
-      "furnizori_solutii": [],
+      "furnizori_solutii": [
+        "LOGIC CONSULTING"
+      ],
       "furnizori_smart": []
     },
     {
@@ -3507,7 +3628,9 @@
       "furnizori_tic": [
         "DIASOFT"
       ],
-      "furnizori_solutii": [],
+      "furnizori_solutii": [
+        "SOBIS SOLUTIONS"
+      ],
       "furnizori_smart": []
     },
     {
@@ -3685,7 +3808,10 @@
         "SOBIS SOLUTIONS"
       ],
       "furnizori_tic": [],
-      "furnizori_solutii": [],
+      "furnizori_solutii": [
+        "GLOBINFO",
+        "SOBIS SOLUTIONS"
+      ],
       "furnizori_smart": []
     },
     {
@@ -3865,7 +3991,9 @@
         "INFOCENTER",
         "ORANGE ROMANIA"
       ],
-      "furnizori_solutii": [],
+      "furnizori_solutii": [
+        "Intern"
+      ],
       "furnizori_smart": [
         "EUROPLAST ROMÂNIA"
       ]
@@ -3906,7 +4034,9 @@
         "WEB TM"
       ],
       "furnizori_tic": [],
-      "furnizori_solutii": [],
+      "furnizori_solutii": [
+        "SOBIS SOLUTIONS"
+      ],
       "furnizori_smart": []
     },
     {
@@ -4040,8 +4170,15 @@
         "VODAFONE"
       ],
       "furnizori_tic": [],
-      "furnizori_solutii": [],
-      "furnizori_smart": []
+      "furnizori_solutii": [
+        "Mindsoft IT Solutions",
+        "INDECO SOFT",
+        "HIRAMA TECH",
+        "Integrisoft Solutions"
+      ],
+      "furnizori_smart": [
+        "VODAFONE"
+      ]
     },
     {
       "name": "Medgidia",
@@ -4083,7 +4220,10 @@
       "furnizori_tic": [
         "ELECTRA SMART GSM"
       ],
-      "furnizori_solutii": [],
+      "furnizori_solutii": [
+        "GEODATA SERVICES",
+        "SOFT DEVICE GROUP"
+      ],
       "furnizori_smart": []
     },
     {
@@ -4122,7 +4262,9 @@
         "INTEGRISOFT SOLUTIONS"
       ],
       "furnizori_tic": [],
-      "furnizori_solutii": [],
+      "furnizori_solutii": [
+        "Integrisoft Solutions"
+      ],
       "furnizori_smart": []
     },
     {
@@ -4252,7 +4394,9 @@
         "STELAR & DAVE TEAM"
       ],
       "furnizori_tic": [],
-      "furnizori_solutii": [],
+      "furnizori_solutii": [
+        "INDECO SOFT"
+      ],
       "furnizori_smart": [
         "ELECTRIK SERVICE CONSTRUCT"
       ]
@@ -4330,7 +4474,9 @@
         "SOBIS SOLUTIONS"
       ],
       "furnizori_tic": [],
-      "furnizori_solutii": [],
+      "furnizori_solutii": [
+        "SOBIS SOLUTIONS"
+      ],
       "furnizori_smart": [
         "PICONET"
       ]
@@ -4425,7 +4571,9 @@
         "ASOC. MASAI"
       ],
       "furnizori_solutii": [],
-      "furnizori_smart": []
+      "furnizori_smart": [
+        "SENSOLIGHT INVEST"
+      ]
     },
     {
       "name": "Rădăuți",
@@ -8945,7 +9093,9 @@
       "furnizori_solutii": [
         "ACONNECT SMART SOFTWARE"
       ],
-      "furnizori_smart": []
+      "furnizori_smart": [
+        "ALTIMATE"
+      ]
     },
     {
       "name": "Turda",
@@ -10182,7 +10332,9 @@
       "furnizori_solutii": [
         "SOBIS SOLUTIONS"
       ],
-      "furnizori_smart": []
+      "furnizori_smart": [
+        "FAST PARK CO"
+      ]
     },
     {
       "name": "Oltenița",
@@ -13093,7 +13245,9 @@
         "ADWIN SOFTWARE"
       ],
       "furnizori_tic": [],
-      "furnizori_solutii": [],
+      "furnizori_solutii": [
+        "ADWIN SOFTWARE"
+      ],
       "furnizori_smart": []
     },
     {
@@ -13325,7 +13479,9 @@
         "DATA PHONEDIVISION"
       ],
       "furnizori_tic": [],
-      "furnizori_solutii": [],
+      "furnizori_solutii": [
+        "DATA PHONEDIVISION"
+      ],
       "furnizori_smart": []
     },
     {
@@ -13478,7 +13634,11 @@
         "ONE SOFTWARE"
       ],
       "furnizori_tic": [],
-      "furnizori_solutii": [],
+      "furnizori_solutii": [
+        "I.T.C. INSTITUTUL PENTRU TEHNICA DE CALCUL",
+        "FIDA SOLUTIONS",
+        "ONE SOFTWARE"
+      ],
       "furnizori_smart": []
     },
     {
